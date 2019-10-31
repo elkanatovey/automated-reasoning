@@ -161,6 +161,15 @@ class Formula:
             current formula.
         """
         # Task 1.3
+        atomics = set()
+        if hasattr(self, 'second'):
+            atomics = atomics.union(self.second.operators())
+            atomics = atomics.union(self.first.operators())
+        elif hasattr(self, 'first'):
+            atomics = atomics.union(self.first.operators())
+        if not is_variable(self.root):
+            atomics.add(self.root)
+        return atomics
         
     @staticmethod
     def parse_prefix(s: str) -> Tuple[Union[Formula, None], str]:
