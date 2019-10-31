@@ -129,6 +129,12 @@ class Formula:
             The standard string representation of the current formula.
         """
         # Task 1.1
+        if hasattr(self, 'second'):
+            return '(' + str(self.first) + self.root + str(self.second) + ')'
+        if hasattr(self, 'first'):
+            return self.root + str(self.first)
+        return self.root
+
 
     def variables(self) -> Set[str]:
         """Finds all atomic propositions (variables) in the current formula.
