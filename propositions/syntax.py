@@ -254,6 +254,9 @@ class Formula:
             representation of a formula, ``False`` otherwise.
         """
         # Task 1.5
+        if Formula.parse_prefix(s)[1] == '':
+            return True
+        return False
         
     @staticmethod
     def parse(s: str) -> Formula:
