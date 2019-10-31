@@ -188,6 +188,59 @@ class Formula:
             the error message is a string with some human-readable content.
         """
         # Task 1.4
+        assert(isinstance(s, str)), [None, 'not a string!']
+        if len(s) == 0:
+            return None, 'invalid formula!'
+
+        if is_constant(s[0]):
+            if len(s)== 1:
+                return Formula(s[0]), ''
+            return Formula(s[0]), s[1:]
+
+        if is_unary(s[0]):
+            if len(s) == 1:
+                return None, 'invalid formula!'
+            remainder_tuple = Formula.parse_prefix(s[1:])  # recursive validity
+            if remainder_tuple[0] is not None:
+                return Formula(s[0], remainder_tuple[0]), remainder_tuple[1]
+            return None, "invalid formula!"
+
+        if is_variable(s[0]):
+            i = 1
+            while i <= len(s):
+                if is_variable(s[0:i]):
+                    i += 1
+                else:
+                    i -= 1
+                    break
+            return Formula(s[:i]), s[i:]
+
+        if s[0] == '(':
+            remainder_tuple = Formula.parse_prefix(s[1:])  #first var
+            if remainder_tuple[0] is not None:
+                remainder = remainder_tuple[1]
+                if is_binary(remainder[0]):  #binary val
+                    tuple_level2 = Formula.parse_prefix(remainder[1:])
+                    #second var
+                    if tuple_level2[0] is not None:
+                        remain_level2 = tuple_level2[1]
+                        if remain_level2 == '' or remain_level2[0] != ')':
+                            return None, "bad parenthesis count"
+                        return Formula(remainder[0], remainder_tuple[0],
+                                             tuple_level2[0]), \
+                               remain_level2[1:]
+
+                elif is_binary(remainder[:2]):  #binary val
+                    tuple_level2 = Formula.parse_prefix(remainder[2:])
+                    #second var
+                    if tuple_level2[0] is not None:
+                        remain_level2 = tuple_level2[1]
+                        if remain_level2 == '' or remain_level2[0] != ')':
+                            return None, "bad parenthesis count"
+                        return Formula(remainder[:2], remainder_tuple[0],
+                                             tuple_level2[0]), \
+                               remain_level2[1:]
+        return None, "bad input!"
 
     @staticmethod
     def is_formula(s: str) -> bool:
