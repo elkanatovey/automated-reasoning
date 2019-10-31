@@ -143,6 +143,15 @@ class Formula:
             A set of all atomic propositions used in the current formula.
         """
         # Task 1.2
+        atomics = set()
+        if hasattr(self, 'second'):
+            atomics = (self.first.variables() | self.second.variables())
+            return atomics
+        if hasattr(self, 'first'):
+            return self.first.variables()
+        if is_variable(self.root):
+            atomics.add(self.root)
+        return atomics
 
     def operators(self) -> Set[str]:
         """Finds all operators in the current formula.
