@@ -270,6 +270,7 @@ class Formula:
         """
         assert Formula.is_formula(s)
         # Task 1.6
+        return Formula.parse_prefix(s)[0]
 
 # Optional tasks for Chapter 1
 
