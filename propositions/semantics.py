@@ -128,6 +128,7 @@ def truth_values(formula: Formula, models: Iterable[Model]) -> Iterable[bool]:
     for model in models:
         yield evaluate(formula, model)
 
+
 def print_truth_table(formula: Formula) -> None:
     """Prints the truth table of the given formula, with variable-name columns
     sorted alphabetically.
@@ -145,6 +146,31 @@ def print_truth_table(formula: Formula) -> None:
         | T | T   | F        |
     """
     # Task 2.4
+    atomics = formula.variables()
+    atomics = list(atomics)
+    atomics.sort()
+    for atom in atomics:
+        print("| ", atom, " ", end='')
+    print("| ", formula, " |")
+
+    for i in range(0, len(atomics)):
+        print("|-", '-'*(1+len(atomics[i])), end='')
+    print("|-", '-'*(1+len(formula.root)),'|')
+    model_gen = all_models(atomics)
+    for model in model_gen:
+        for i in range(0, len(atomics)):
+            print("| ", end='')
+            if model[atomics[i]]:
+                print('T', ' '*len(atomics[i]), end='')
+            else:
+                print('F', ' '*len(atomics[i]), end='')
+        print("| ", end='')
+        model_result = evaluate(formula, model)
+        if model_result:
+            print('T', ' '*len(formula.root), '|')
+        else:
+            print('F', ' '*len(formula.root), '|')
+
 
 def is_tautology(formula: Formula) -> bool:
     """Checks if the given formula is a tautology.
