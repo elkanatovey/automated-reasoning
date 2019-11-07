@@ -54,6 +54,7 @@ def evaluate(formula: Formula, model: Model) -> bool:
     assert formula.variables().issubset(variables(model))
     # Task 2.1
 
+
 def all_models(variables: List[str]) -> Iterable[Model]:
     """Calculates all possible models over the given variables.
 
