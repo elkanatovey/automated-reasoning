@@ -111,6 +111,7 @@ def all_models(variables: List[str]) -> Iterable[Model]:
     for model in itertools.product(bools, repeat=num_of_variables):
         yield {v: model[i] for i, v in enumerate(variables)}
 
+
 def truth_values(formula: Formula, models: Iterable[Model]) -> Iterable[bool]:
     """Calculates the truth value of the given formula in each of the given
     model.
@@ -124,6 +125,8 @@ def truth_values(formula: Formula, models: Iterable[Model]) -> Iterable[bool]:
         each of the given models, in the order of the given models.
     """
     # Task 2.3
+    for model in models:
+        yield evaluate(formula, model)
 
 def print_truth_table(formula: Formula) -> None:
     """Prints the truth table of the given formula, with variable-name columns
