@@ -234,6 +234,28 @@ def synthesize_for_model(model: Model) -> Formula:
     """
     assert is_model(model)
     # Task 2.6
+    if len(model.keys()) == 1:
+        for key in model:
+            if model[key]:
+                return Formula(key)
+            s = '~' + key
+            return Formula.parse_prefix(s)[0]
+    formula_string = ''
+    count = -1
+    for key in model:
+        if not model[key]:
+            if (count+2) == len(model.keys()):
+                formula_string = formula_string + '~' + key
+            else:
+                formula_string = formula_string + '(~' + key + '&'
+        else:
+            if (count+2) == len(model.keys()):
+                formula_string = formula_string + key
+            else:
+                formula_string += '(' + key + '&'
+        count += 1
+    formula_string = formula_string + ')'*count
+    return Formula.parse_prefix(formula_string)[0]
 
 def synthesize(variables: List[str], values: Iterable[bool]) -> Formula:
     """Synthesizes a propositional formula in DNF over the given variables, from
