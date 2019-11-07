@@ -4,7 +4,7 @@
 # File name: propositions/semantics.py
 
 """Semantic analysis of propositional-logic constructs."""
-
+import itertools
 from typing import AbstractSet, Iterable, Iterator, List, Mapping
 
 from propositions.syntax import *
@@ -88,9 +88,6 @@ def evaluate(formula: Formula, model: Model) -> bool:
     return model[str(formula)]
 
 
-
-    return True
-
 def all_models(variables: List[str]) -> Iterable[Model]:
     """Calculates all possible models over the given variables.
 
@@ -109,6 +106,10 @@ def all_models(variables: List[str]) -> Iterable[Model]:
     for v in variables:
         assert is_variable(v)
     # Task 2.2
+    bools = [False, True]
+    num_of_variables = len(variables)
+    for model in itertools.product(bools, repeat=num_of_variables):
+        yield {v: model[i] for i, v in enumerate(variables)}
 
 def truth_values(formula: Formula, models: Iterable[Model]) -> Iterable[bool]:
     """Calculates the truth value of the given formula in each of the given
