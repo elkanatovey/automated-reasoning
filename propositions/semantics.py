@@ -54,6 +54,42 @@ def evaluate(formula: Formula, model: Model) -> bool:
     assert formula.variables().issubset(variables(model))
     # Task 2.1
 
+    # binary case
+    if hasattr(formula, 'second'):
+        if str(formula.second) in model:
+            second_val = model[str(formula.second)]
+        else:
+            second_val = evaluate(formula.second, model)
+
+        if str(formula.first) not in model:
+            first_val = evaluate(formula.first, model)
+        else:
+            first_val = model[str(formula.first)]
+
+        if formula.root == '->':
+            return (not first_val) or second_val
+        if formula.root == '&':
+            return first_val and second_val
+        if formula.root == '|':
+            return first_val or second_val
+    # unary case
+    if hasattr(formula, 'first'):
+        if str(formula.first) not in model:
+            first_val = evaluate(formula.first, model)
+        else:
+            first_val = model[str(formula.first)]
+        return not first_val
+
+    # atomic case
+    if formula.root == 'T':
+        return True
+    elif formula.root == 'F':
+        return False
+    return model[str(formula)]
+
+
+
+    return True
 
 def all_models(variables: List[str]) -> Iterable[Model]:
     """Calculates all possible models over the given variables.
