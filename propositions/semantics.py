@@ -182,6 +182,14 @@ def is_tautology(formula: Formula) -> bool:
         ``True`` if the given formula is a tautology, ``False`` otherwise.
     """
     # Task 2.5a
+    atomic_vars = list(formula.variables())
+    models = all_models(atomic_vars)
+    tautology_check = truth_values(formula, models)
+    for setting in tautology_check:
+        if setting is False:
+            return False
+    return True
+
 
 def is_contradiction(formula: Formula) -> bool:
     """Checks if the given formula is a contradiction.
@@ -193,6 +201,13 @@ def is_contradiction(formula: Formula) -> bool:
         ``True`` if the given formula is a contradiction, ``False`` otherwise.
     """
     # Task 2.5b
+    atomic_vars = formula.variables()
+    models = all_models(list(atomic_vars))
+    contradiction_check = truth_values(formula, models)
+    for setting in contradiction_check:
+        if setting is True:
+            return False
+    return True
 
 def is_satisfiable(formula: Formula) -> bool:
     """Checks if the given formula is satisfiable.
@@ -204,6 +219,7 @@ def is_satisfiable(formula: Formula) -> bool:
         ``True`` if the given formula is satisfiable, ``False`` otherwise.
     """
     # Task 2.5c
+    return not is_contradiction(formula)
 
 def synthesize_for_model(model: Model) -> Formula:
     """Synthesizes a propositional formula in the form of a single clause that
