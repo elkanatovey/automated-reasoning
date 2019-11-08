@@ -221,6 +221,7 @@ def is_satisfiable(formula: Formula) -> bool:
     # Task 2.5c
     return not is_contradiction(formula)
 
+
 def synthesize_for_model(model: Model) -> Formula:
     """Synthesizes a propositional formula in the form of a single clause that
       evaluates to ``True`` in the given model, and to ``False`` in any other
@@ -282,6 +283,39 @@ def synthesize(variables: List[str], values: Iterable[bool]) -> Formula:
     """
     assert len(variables) > 0
     # Task 2.7
+
+    models = all_models(variables)
+    dnf_string = ''
+    most_recent_formula = ''
+    count = -1
+    for value, model in zip(values, models):
+        if value:
+            most_recent_formula = str(synthesize_for_model(model))
+            dnf_string += '(' + most_recent_formula + '|'
+            count += 1
+
+    # false table case
+    if count == -1:
+        contradiction_str = ''
+        count = 0
+        for atom in variables:
+            contradiction_str = '(('+atom+'&~'+atom+')&'
+        if count == 0:
+            contradiction_str = contradiction_str[1:-1]
+            return Formula.parse_prefix(contradiction_str)[0]
+        contradiction_str = contradiction_str[:-1] + ')'*count
+        return Formula.parse_prefix(contradiction_str)[0]
+
+    # one value case
+    if count == 0:
+        dnf_string = dnf_string[1:-1]
+        return Formula.parse_prefix(dnf_string)[0]
+
+    # standard case
+    dnf_string = dnf_string[:-len(most_recent_formula)-2] + \
+                 most_recent_formula + count*')'
+    return Formula.parse_prefix(dnf_string)[0]
+
 
 # Tasks for Chapter 4
 
