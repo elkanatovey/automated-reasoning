@@ -53,9 +53,9 @@ def is_binary(s: str) -> bool:
     Returns:
         ``True`` if the given string is a binary operator, ``False`` otherwise.
     """
-    return s == '&' or s == '|' or s == '->'
+    # return s == '&' or s == '|' or s == '->'
     # For Chapter 3:
-    # return s in {'&', '|',  '->', '+', '<->', '-&', '-|'}
+    return s in {'&', '|',  '->', '+', '<->', '-&', '-|'}
 
 @frozen
 class Formula:
