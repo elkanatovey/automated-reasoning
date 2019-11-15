@@ -66,12 +66,21 @@ def evaluate(formula: Formula, model: Model) -> bool:
         else:
             first_val = model[str(formula.first)]
 
-        if formula.root == '->':
+        if formula.root == '->':  # implies
             return (not first_val) or second_val
-        if formula.root == '&':
+        if formula.root == '&':  # and
             return first_val and second_val
-        if formula.root == '|':
+        if formula.root == '|':  # or
             return first_val or second_val
+        if formula.root == '+':  # xor
+            return first_val != second_val
+        if formula.root == '<->':  # iff
+            return first_val == second_val
+        if formula.root == '-&':  # nand
+            return not (first_val and second_val)
+        if formula.root == '-|':  # nor
+            return not (first_val or second_val)
+
     # unary case
     if hasattr(formula, 'first'):
         if str(formula.first) not in model:

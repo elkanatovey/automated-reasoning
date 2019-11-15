@@ -252,7 +252,6 @@ class Formula:
                                        tuple_level2[0]), \
                                remain_level2[1:]
 
-
         return None, "bad input!"
 
     @staticmethod
