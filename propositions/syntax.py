@@ -219,7 +219,7 @@ class Formula:
             remainder_tuple = Formula.parse_prefix(s[1:])  #first var
             if remainder_tuple[0] is not None:
                 remainder = remainder_tuple[1]
-                if is_binary(remainder[0]):  #binary val
+                if is_binary(remainder[0]):  # 1 part binary val
                     tuple_level2 = Formula.parse_prefix(remainder[1:])
                     #second var
                     if tuple_level2[0] is not None:
@@ -230,7 +230,7 @@ class Formula:
                                              tuple_level2[0]), \
                                remain_level2[1:]
 
-                elif is_binary(remainder[:2]):  #binary val
+                elif is_binary(remainder[:2]):  # 2 part binary val
                     tuple_level2 = Formula.parse_prefix(remainder[2:])
                     #second var
                     if tuple_level2[0] is not None:
@@ -240,6 +240,19 @@ class Formula:
                         return Formula(remainder[:2], remainder_tuple[0],
                                              tuple_level2[0]), \
                                remain_level2[1:]
+
+                elif is_binary(remainder[:3]):  # 3 part binary val
+                    tuple_level2 = Formula.parse_prefix(remainder[3:])
+                    #second var
+                    if tuple_level2[0] is not None:
+                        remain_level2 = tuple_level2[1]
+                        if remain_level2 == '' or remain_level2[0] != ')':
+                            return None, "bad parenthesis count"
+                        return Formula(remainder[:3], remainder_tuple[0],
+                                       tuple_level2[0]), \
+                               remain_level2[1:]
+
+
         return None, "bad input!"
 
     @staticmethod
