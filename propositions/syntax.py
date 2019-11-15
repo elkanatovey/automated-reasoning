@@ -328,6 +328,17 @@ class Formula:
         for variable in substitution_map:
             assert is_variable(variable)
         # Task 3.3
+        if hasattr(self, 'second'):
+            return Formula(self.root, self.first.substitute_variables(
+                substitution_map), self.second.substitute_variables(
+                substitution_map))
+        elif hasattr(self, 'first'):
+            return Formula(self.root, self.first.substitute_variables(
+                substitution_map))
+        if is_variable(self.root):
+            if self.root in substitution_map:
+                return substitution_map[self.root]
+        return self
 
     def substitute_operators(
             self, substitution_map: Mapping[str, Formula]) -> Formula:
