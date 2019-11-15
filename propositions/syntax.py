@@ -170,7 +170,7 @@ class Formula:
         if not is_variable(self.root):
             atomics.add(self.root)
         return atomics
-        
+
     @staticmethod
     def parse_prefix(s: str) -> Tuple[Union[Formula, None], str]:
         """Parses a prefix of the given string into a formula.
@@ -269,7 +269,7 @@ class Formula:
         if Formula.parse_prefix(s)[1] == '':
             return True
         return False
-        
+
     @staticmethod
     def parse(s: str) -> Formula:
         """Parses the given valid string representation into a formula.
@@ -365,3 +365,21 @@ class Formula:
                    is_constant(operator)
             assert substitution_map[operator].variables().issubset({'p', 'q'})
         # Task 3.4
+        if hasattr(self, 'second'):
+            second_formula = self.second.substitute_operators(substitution_map)
+            first_formula = self.first.substitute_operators(substitution_map)
+            if self.root not in substitution_map:
+                return Formula(self.root, first_formula, second_formula)
+            # replacing p and q
+            return substitution_map[self.root].substitute_variables({'p':
+                                           first_formula, 'q': second_formula})
+
+        elif hasattr(self, 'first'):
+            first_formula = self.first.substitute_operators(substitution_map)
+            if self.root not in substitution_map:
+                return Formula(self.root, first_formula)
+            return substitution_map[self.root].substitute_variables \
+                ({'p': first_formula})
+        if self.root in substitution_map:
+            return substitution_map[self.root]
+        return self
