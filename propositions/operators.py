@@ -22,6 +22,14 @@ def to_not_and_or(formula: Formula) -> Formula:
         ``'|'``.
     """
     # Task 3.5
+    return formula.substitute_operators(
+        {'+': Formula.parse_prefix('((p&~q)|(~p&q))')[0],
+         '->': Formula.parse_prefix('~(p&~q)')[0],
+         '<->': Formula.parse_prefix('((p&q)|(~p&~q))')[0],
+         '-&': Formula.parse_prefix('~(p&q)')[0],
+         '-|': Formula.parse_prefix('~(p|q)')[0],
+         'T': Formula.parse_prefix('(p|~p)')[0],
+         'F': Formula.parse_prefix('(p&~p)')[0]})
 
 def to_not_and(formula: Formula) -> Formula:
     """Syntactically converts the given formula to an equivalent formula that
