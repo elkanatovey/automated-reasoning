@@ -59,10 +59,13 @@ def to_nand(formula: Formula) -> Formula:
         contains no constants or operators beyond ``'-&'``.
     """
     # Task 3.6b
-    f = to_not_and(formula)
+    f = to_not_and_or(formula) # faster than to_not_and
     return f.substitute_operators({'~': Formula.parse_prefix('(p-&p)')[0],
                                    '&': Formula
-                                  .parse_prefix('((p-&q)-&(p-&q))')[0]})
+                                  .parse_prefix('((p-&q)-&(p-&q))')[0],
+                                   # speeds up runtime
+                                   '|': Formula.
+                                  parse_prefix('((p-&p)-&(q-&q))')[0]})
 
 
 def to_implies_not(formula: Formula) -> Formula:
@@ -93,3 +96,5 @@ def to_implies_false(formula: Formula) -> Formula:
         contains no constants or operators beyond ``'->'`` and ``'F'``.
     """
     # Task 3.6d
+    f = to_implies_not(formula)
+    return f.substitute_operators({'~': Formula.parse_prefix('(p->F)')[0]})
