@@ -43,6 +43,8 @@ def to_not_and(formula: Formula) -> Formula:
         contains no constants or operators beyond ``'~'`` and ``'&'``.
     """
     # Task 3.6a
+    f = to_not_and_or(formula)
+    return f.substitute_operators({'|': Formula.parse_prefix('~(~p&~q)')[0]})
 
 def to_nand(formula: Formula) -> Formula:
     """Syntactically converts the given formula to an equivalent formula that
