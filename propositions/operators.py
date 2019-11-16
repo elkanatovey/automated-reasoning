@@ -77,6 +77,8 @@ def to_implies_not(formula: Formula) -> Formula:
         contains no constants or operators beyond ``'->'`` and ``'~'``.
     """
     # Task 3.6c
+    f = to_nand(formula)
+    return f.substitute_operators({'-&': Formula.parse_prefix('(p->~q)')[0]})
 
 
 def to_implies_false(formula: Formula) -> Formula:
