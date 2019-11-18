@@ -341,6 +341,13 @@ def evaluate_inference(rule: InferenceRule, model: Model) -> bool:
     """
     assert is_model(model)
     # Task 4.2
+    inference_not_needed = evaluate(rule.conclusion, model)
+    if inference_not_needed: # evaluates to true
+        return True
+    for f in rule.assumptions:
+        if not evaluate(f, model):
+            return True
+    return False
 
 def is_sound_inference(rule: InferenceRule) -> bool:
     """Checks if the given inference rule is sound, i.e., whether its
