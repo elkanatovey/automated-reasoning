@@ -88,6 +88,12 @@ class InferenceRule:
             conclusion of the current inference rule.
         """
         # Task 4.1
+        inf_vars = set()
+        for assumption in self.assumptions:
+            inf_vars = inf_vars.union(assumption.variables())
+        inf_vars = inf_vars.union(self.conclusion.variables())
+        return inf_vars
+
 
     def specialize(self, specialization_map: SpecializationMap) -> \
             InferenceRule:
