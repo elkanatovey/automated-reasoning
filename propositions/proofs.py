@@ -142,6 +142,32 @@ class InferenceRule:
             for variable in specialization_map2:
                 assert is_variable(variable)
         # Task 4.5a
+        if specialization_map1 is None or specialization_map2 is None:
+            return None
+
+        # check for empties
+        if not specialization_map1:
+            return specialization_map2
+        if not specialization_map2:
+            return specialization_map1
+
+        # check for mismatches
+        for key in specialization_map1:
+            if key in specialization_map2 and specialization_map1[key] != \
+                    specialization_map2[key]:
+                return None
+        for key in specialization_map2:
+            if key in specialization_map1 and specialization_map1[key] != \
+                    specialization_map2[key]:
+                return None
+
+        # merge dicts
+        merged_dict = {}
+        for key in specialization_map1:
+            merged_dict[key] = specialization_map1[key]
+        for key in specialization_map2:
+            merged_dict[key] = specialization_map2[key]
+        return merged_dict
         
     @staticmethod
     def formula_specialization_map(general: Formula, specialization: Formula) \
