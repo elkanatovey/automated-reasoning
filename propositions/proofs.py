@@ -248,6 +248,24 @@ class InferenceRule:
             in fact not a specialization of the current rule.
         """
         # Task 4.5c
+        specialization_map = {}
+        conclusion_merge = InferenceRule. \
+            formula_specialization_map(self.conclusion,
+                                       specialization.conclusion)
+        specialization_map = InferenceRule.merge_specialization_maps(
+            conclusion_merge, specialization_map)
+
+
+        if len(self.assumptions) != len(specialization.assumptions):
+            return None
+        if len(self.assumptions) == 0:
+            return specialization_map
+        for f, g in zip(self.assumptions, specialization.assumptions):
+            current_mapping = InferenceRule.formula_specialization_map(f, g)
+            specialization_map = InferenceRule.merge_specialization_maps(
+                specialization_map, current_mapping)
+
+        return specialization_map
 
     def is_specialization_of(self, general: InferenceRule) -> bool:
         """Checks if the current inference rule is a specialization of the given
