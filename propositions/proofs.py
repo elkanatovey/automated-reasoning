@@ -168,7 +168,9 @@ class InferenceRule:
         for key in specialization_map2:
             merged_dict[key] = specialization_map2[key]
         return merged_dict
-        
+
+
+
     @staticmethod
     def formula_specialization_map(general: Formula, specialization: Formula) \
             -> Union[SpecializationMap, None]:
@@ -184,6 +186,54 @@ class InferenceRule:
             in fact not a specialization of `general`.
         """
         # Task 4.5b
+        original_variables = general.variables()
+        original_variables_mapping = {}
+
+        # root is variable
+        if (general.root != specialization.root) and general.root in original_variables:
+            original_variables_mapping[general.root] = specialization
+            return original_variables_mapping
+
+        elif general.root in original_variables:
+            original_variables_mapping[general.root] = specialization
+            return original_variables_mapping
+
+        elif (general.root != specialization.root) and general.root not in \
+        original_variables:
+            return None
+
+        # case exists second recurse
+        if hasattr(general, 'second') and hasattr(specialization, 'second'):
+            original_variables_mapping_right = \
+                InferenceRule.formula_specialization_map(general.second,
+                                                         specialization.second)
+            original_variables_mapping_left = \
+                InferenceRule.formula_specialization_map(general.first,
+                                                         specialization.first)
+            original_variables_mapping = \
+                InferenceRule.merge_specialization_maps(
+                    original_variables_mapping_left, original_variables_mapping_right)
+            return original_variables_mapping
+        elif hasattr(general, 'second') or hasattr(specialization, 'second'):
+            return None
+
+
+        #case exists first recurse
+        elif hasattr(general, 'first') and hasattr(specialization, 'first'):
+            original_variables_mapping_left = \
+                InferenceRule.formula_specialization_map(general.first,
+                                                         specialization.first)
+            return original_variables_mapping_left
+
+        # constant edge case
+        elif (general.root == 'T' == specialization.root) or (general.root ==\
+                'F' == specialization.root):
+            return original_variables_mapping
+
+        # build doesnt match
+        return None
+
+
 
     def specialization_map(self, specialization: InferenceRule) -> \
             Union[SpecializationMap, None]:
