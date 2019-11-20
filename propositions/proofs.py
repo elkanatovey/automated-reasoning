@@ -385,7 +385,7 @@ class Proof:
                 of the proof, ``False`` otherwise.
             """
             return self.rule is None
-        
+
     def __repr__(self) -> str:
         """Computes a string representation of the current proof.
 
@@ -416,6 +416,14 @@ class Proof:
         """
         assert line_number < len(self.lines)
         # Task 4.6a
+        if self.lines[line_number].is_assumption():
+            return None
+        assumptions_list = []
+        for assumed_line in self.lines[line_number].assumptions:
+            assumptions_list.append(self.lines[assumed_line].formula)
+        return InferenceRule(assumptions_list, self.lines[line_number].formula)
+
+
 
     def is_line_valid(self, line_number: int) -> bool:
         """Checks if the specified line validly follows from its justifications.
