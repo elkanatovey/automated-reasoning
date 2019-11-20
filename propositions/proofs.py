@@ -455,8 +455,6 @@ class Proof:
 
         # assumption case
         if self.lines[line_number].is_assumption():
-            # if self.statement.assumptions is None:
-            #     return False
             if self.lines[line_number].formula in self.statement.assumptions:
                 return True
             return False
@@ -485,6 +483,17 @@ class Proof:
             statement via its inference rules, ``False`` otherwise.
         """
         # Task 4.6c
+
+        # check individual lines
+        num_of_lines = len(self.lines)
+        for i in range(0, num_of_lines):
+            if not self.is_line_valid(i):
+                return False
+
+        # check conclusion is reached
+        if self.lines[num_of_lines -1].formula == self.statement.conclusion:
+            return True
+        return False
 
 # Chapter 5 tasks
 
