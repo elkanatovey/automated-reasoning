@@ -29,6 +29,33 @@ def prove_and_commutativity() -> Proof:
         the inference rules `A_RULE`, `AE2_RULE`, and `AE1_RULE`.
     """
     # Task 4.7
+    formula_pandq = Formula.parse_prefix('(p&q)')[0]
+    formula_qandp = Formula.parse_prefix('(q&p)')[0]
+    formula_xandy = Formula.parse_prefix('(x&y)')[0]
+    formula_yandx = Formula.parse_prefix('(y&x)')[0]
+
+    proof_assumptions = [formula_pandq]
+    proof_conclusion = formula_qandp
+    proof_claim = InferenceRule(proof_assumptions, proof_conclusion)
+
+    # rules
+    proof_rule1 = InferenceRule([Formula('x'), Formula('y')],
+                                         formula_xandy)
+    proof_rule2 = InferenceRule([formula_xandy], Formula('x'))
+    proof_rule3 = InferenceRule([formula_xandy], Formula('y'))
+    rule_set = set()
+    rule_set.add(proof_rule1)
+    rule_set.add(proof_rule2)
+    rule_set.add(proof_rule3)
+
+    # create lines
+    line0 = Proof.Line(formula_pandq)
+    line1 = Proof.Line(Formula('q'), proof_rule3, [0])
+    line2 = Proof.Line(Formula('p'), proof_rule2, [0])
+    line3 = Proof.Line(formula_qandp, proof_rule1, [1, 2])
+    lines = [line0, line1, line2, line3]
+
+    return Proof(proof_claim, rule_set, lines)
 
 def prove_I0() -> Proof:
     """Proves `~propositions.axiomatic_systems.I0` via
