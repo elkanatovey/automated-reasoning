@@ -419,8 +419,12 @@ class Proof:
         if self.lines[line_number].is_assumption():
             return None
         assumptions_list = []
+
+        # find assumptions from preceding lines
         for assumed_line in self.lines[line_number].assumptions:
             assumptions_list.append(self.lines[assumed_line].formula)
+
+        # create inference of previous lines and current
         return InferenceRule(assumptions_list, self.lines[line_number].formula)
 
 
@@ -448,6 +452,29 @@ class Proof:
         """
         assert line_number < len(self.lines)
         # Task 4.6b
+
+        # assumption case
+        if self.lines[line_number].is_assumption():
+            # if self.statement.assumptions is None:
+            #     return False
+            if self.lines[line_number].formula in self.statement.assumptions:
+                return True
+            return False
+        if self.lines[line_number].rule not in self.rules:
+            return False
+
+        # inference case
+        for assumed_line in self.lines[line_number].assumptions:
+            if assumed_line >= line_number:
+                return False
+
+        line_as_inference = self.rule_for_line(line_number)
+        if line_as_inference.is_specialization_of(self.lines[
+                                                      line_number].rule):
+            return True
+        return False
+
+
         
     def is_valid(self) -> bool:
         """Checks if the current proof is a valid proof of its claimed statement
