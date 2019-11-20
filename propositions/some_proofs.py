@@ -32,7 +32,7 @@ def prove_and_commutativity() -> Proof:
     formula_pandq = Formula.parse_prefix('(p&q)')[0]
     formula_qandp = Formula.parse_prefix('(q&p)')[0]
     formula_xandy = Formula.parse_prefix('(x&y)')[0]
-    formula_yandx = Formula.parse_prefix('(y&x)')[0]
+
 
     proof_assumptions = [formula_pandq]
     proof_conclusion = formula_qandp
@@ -70,6 +70,55 @@ def prove_I0() -> Proof:
         `~propositions.axiomatic_systems.D`.
     """
     # Task 4.8
+    p_implies_p = Formula.parse('(p->p)')
+
+    proof_assumptions = []
+    proof_conclusion = p_implies_p
+    proof_claim = InferenceRule(proof_assumptions, proof_conclusion)
+
+    # rules
+    rule_set = set()
+    rule_set.add(MP)
+    rule_set.add(I1)
+    rule_set.add(D)
+
+    # create proof lines
+    pqr_sub = Formula.parse('((p->((p->p)->p))->((p->(p->p))->(p->p)))')
+    line0 = Proof.Line(pqr_sub, D, [])
+
+
+    formula_qpq_sub = Formula.parse('(p->((p->p)->p))')
+    line1 = Proof.Line(formula_qpq_sub, I1, [])
+
+    formula_qpq_sub2 = Formula.parse('((p->(p->p))->(p->p))')
+    line2 = Proof.Line(formula_qpq_sub2, MP, [1, 0])
+
+    specialized_i1 = Formula.parse('(p->(p->p))')
+    line3 = Proof.Line(specialized_i1, I1, [])
+
+    line4 = Proof.Line(p_implies_p, MP, [3, 2])
+
+    lines = [line0, line1, line2, line3, line4]
+
+    return Proof(proof_claim, rule_set, lines)
+
+# ((p->((p->p)->p))->((p->(p->p))->(p->p)))
+#
+# (p->(p->p))
+#
+#
+# stage 0'((p->((p->p)->p))->((p->(p->p))->(p->p)))' Rule D
+#
+# stage 1 '(p->((p->p)->p))'  Rule I1
+#
+# stage 2 '(p->((p->p)->p))' + '((p->((p->p)->p))->((p->(p->p))->(p->p)))'
+# gives '((p->(p->p))->(p->p))' by rule MP
+# stage 3 '(p->(p->p))' by rule I1
+# stage 4 '(p->(p->p))' + '((p->(p->p))->(p->p))' gives '(p->p)' by rule MP
+
+
+
+
 
 #: Hypothetical syllogism
 HS = InferenceRule([Formula.parse('(p->q)'), Formula.parse('(q->r)')],
