@@ -517,26 +517,18 @@ def prove_specialization(proof: Proof, specialization: InferenceRule) -> Proof:
     spec_map = proof.statement.specialization_map(specialization)
     spec_statement = specialization
 
-    # specialize rules
-    spec_rules = set()
-    for rule in proof.rules:
-        spec_rules.add(rule.specialize(spec_map))
-
     # specialize lines
     spec_lines = []
     for line in proof.lines:
         spec_formula = line.formula.substitute_variables(spec_map)
-        spec_rule = None
-        if line.rule is not None:
-            spec_rule = line.rule.specialize(spec_map)
         if hasattr(line, 'assumptions'):
-            spec_line = Proof.Line(spec_formula, spec_rule, line.assumptions)
+            spec_line = Proof.Line(spec_formula, line.rule, line.assumptions)
         else:
-            spec_line = Proof.Line(spec_formula, spec_rule)
+            spec_line = Proof.Line(spec_formula, line.rule)
         spec_lines.append(spec_line)
 
     # specialized proof
-    spec_proof = Proof(spec_statement, spec_rules, spec_lines)
+    spec_proof = Proof(spec_statement, proof.rules, spec_lines)
     return spec_proof
 
 def inline_proof_once(main_proof: Proof, line_number: int, lemma_proof: Proof) \
