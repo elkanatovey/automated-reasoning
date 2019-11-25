@@ -559,6 +559,67 @@ def inline_proof_once(main_proof: Proof, line_number: int, lemma_proof: Proof) \
     assert lemma_proof.is_valid()
     # Task 5.2a
 
+    # create new statement and rules
+    new_statement = main_proof.statement
+    new_rules = set()
+    new_rules = new_rules.union(main_proof.rules)
+    new_rules = new_rules.union(lemma_proof.rules)
+
+    # start working on lines
+    new_lines = main_proof.lines[:line_number]
+    new_lines = list(new_lines)
+
+    # extract inf rule to specialize
+
+    line_to_replace = main_proof.lines[line_number]
+
+    specialized_irule = main_proof.rule_for_line(line_number)
+    specialized_lemma = prove_specialization(lemma_proof, specialized_irule)
+
+    # inline lemma
+    for line in specialized_lemma.lines:
+
+        # lemma assumption
+        if line.is_assumption():
+            for assumption in line_to_replace.assumptions:
+                if main_proof.lines[assumption].formula == line.formula:
+                    updated_line = main_proof.lines[assumption]
+                    new_lines.append(updated_line)
+                    break
+
+        # not assumption
+        else:
+            new_assumptions = []
+            for i in range(len(line.assumptions)):
+                new_assumptions.append(line.assumptions[i] + line_number)
+            updated_line = Proof.Line(line.formula, line.rule,
+                                      new_assumptions)
+            new_lines.append(updated_line)
+
+    # remaining lines
+    displacement_count = len(lemma_proof.lines) - 1
+    for i in range(line_number+1, len(main_proof.lines)):
+        updated_assumptions = []
+
+        if hasattr(main_proof.lines[i], 'assumptions'):
+            for assumption in main_proof.lines[i].assumptions:
+
+                # check if assumption before insert
+                if assumption < line_number:
+                    updated_assumptions.append(assumption)
+                else:
+                    updated_assumptions.append(assumption + displacement_count)
+            updated_line = Proof.Line(main_proof.lines[i].formula,
+                                  main_proof.lines[i].rule, updated_assumptions)
+        else:
+            updated_line = Proof.Line(main_proof.lines[i].formula,
+                                      main_proof.lines[i].rule)
+
+        new_lines.append(updated_line)
+
+    inlined_proof = Proof(new_statement, new_rules, new_lines)
+    return inlined_proof
+
 def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
     """Inlines the given proof of a "lemma" inference rule into the given proof
     that uses that "lemma" rule, eliminating all usages of (any specialization
