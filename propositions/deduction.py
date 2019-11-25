@@ -34,6 +34,22 @@ def prove_corollary(antecedent_proof: Proof, consequent: Formula,
                          Formula('->', antecedent_proof.statement.conclusion,
                                  consequent)).is_specialization_of(conditional)
     # Task 5.3a
+    assumptions = antecedent_proof.statement.assumptions
+    statement = InferenceRule(assumptions, consequent)
+
+    rules = set()
+    rules = rules.union(antecedent_proof.rules)
+    rules.add(conditional)
+    lines = []
+    lines.extend(antecedent_proof.lines)
+
+    f = Formula('->', antecedent_proof.statement.conclusion, consequent)
+    new_line1 = Proof.Line(f, conditional, [])
+    lines.append(new_line1)
+    new_line2 = Proof.Line(consequent, MP, [len(lines)-2, len(lines)-1])
+    lines.append(new_line2)
+    main_proof = Proof(statement, rules, lines)
+    return main_proof
 
 def combine_proofs(antecedent1_proof: Proof, antecedent2_proof: Proof,
                    consequent: Formula, double_conditional: InferenceRule) -> \
