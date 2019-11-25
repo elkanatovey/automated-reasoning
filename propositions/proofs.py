@@ -639,3 +639,26 @@ def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
         `lemma_proof`.
     """
     # Task 5.2b
+    count = -1
+    while True:
+        if count >= len(main_proof.lines):
+            break
+        count = 0
+
+        for line in main_proof.lines:
+            if line.rule is None:
+                count += 1
+                continue
+            if line.rule.is_specialization_of(lemma_proof.statement):
+                main_proof = inline_proof_once(main_proof, count, lemma_proof)
+                break
+            count += 1
+    statement = main_proof.statement
+    rules = set()
+    rules = rules.union(main_proof.rules)
+    rules.remove(lemma_proof.statement)
+    lines = main_proof.lines
+    main_proof = Proof(statement, rules, lines)
+    return main_proof
+
+
