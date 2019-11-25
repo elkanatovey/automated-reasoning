@@ -142,6 +142,22 @@ def remove_assumption(proof: Proof) -> Proof:
     for rule in proof.rules:
         assert rule == MP or len(rule.assumptions) == 0
     # Task 5.4
+    new_assumptions = proof.statement.assumptions[:-1]
+    new_rules = set()
+    new_rules.update(proof.rules)
+    new_rules.update([MP, I0, I1, D])
+    new_lines = []
+    for line in proof.lines:
+        # case disallowed_assumption
+        if line.formula == proof.statement.assumptions[-1]:
+            new_lines.append(Proof.Line(Formula('->', line.formula,
+                                                line.formula), I0, []))
+        # case
+        elif
+
+    print(1)
+
+
 
 def proof_from_inconsistency(proof_of_affirmation: Proof,
                              proof_of_negation: Proof, conclusion: Formula) -> \
