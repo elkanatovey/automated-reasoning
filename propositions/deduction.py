@@ -86,6 +86,37 @@ def combine_proofs(antecedent1_proof: Proof, antecedent2_proof: Proof,
         ).is_specialization_of(double_conditional)
     # Task 5.3b
 
+    # calc nested rule
+    nested_rule = InferenceRule([], double_conditional.conclusion.second)
+    nested_claim = prove_corollary(antecedent2_proof, consequent, nested_rule)
+    p2_implies_q = nested_claim.lines[-2].formula
+
+    # calc outer layer rule
+    top_claim = prove_corollary(antecedent1_proof, p2_implies_q,
+                                double_conditional)
+
+    # join proofs
+    next_level_lines = []
+    next_level_lines.extend(top_claim.lines)
+    for line in nested_claim.lines:
+        if line.formula == top_claim.statement.conclusion:
+            next_level_lines.append(top_claim.lines[-1])
+        else:
+            if hasattr(line, 'assumptions'):
+                current = line
+                assumptions = list(current.assumptions)
+                for i in range(len(current.assumptions)):
+                    assumptions[i] += len(top_claim.lines)
+                next_level_lines.append(Proof.Line(current.formula,
+                                                   current.rule, assumptions))
+            else:
+                next_level_lines.append(line)
+
+    next_level_assumptions = InferenceRule(
+        antecedent1_proof.statement.assumptions, consequent)
+    next_level = Proof(next_level_assumptions, top_claim.rules, next_level_lines)
+    return next_level
+
 def remove_assumption(proof: Proof) -> Proof:
     """Converts a proof of some `conclusion` formula, the last assumption of
     which is an assumption `assumption`, into a proof of
