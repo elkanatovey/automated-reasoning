@@ -137,6 +137,31 @@ def prove_hypothetical_syllogism() -> Proof:
         `~propositions.axiomatic_systems.D`.
     """
     # Task 5.5
+    p_implies_q = Formula.parse('(p->q)')
+    q_implies_r = Formula.parse('(q->r)')
+    r = Formula.parse('r')
+    p = Formula.parse('p')
+
+    proof_assumptions = [p_implies_q, q_implies_r, p]
+    proof_conclusion = r
+    proof_claim = InferenceRule(proof_assumptions, proof_conclusion)
+
+    # rules
+    rule_set = set()
+    rule_set.update([MP, I0, I1, D])
+
+    # create proof lines
+    line0 = Proof.Line(p, None, None)
+    line1 = Proof.Line(p_implies_q, None, None)
+    line2 = Proof.Line(Formula.parse('q'), MP, [0, 1])
+    line3 = Proof.Line(q_implies_r, None, None)
+    line4 = Proof.Line(Formula.parse('r'), MP, [2, 3])
+    proof_lines = [line0, line1, line2, line3, line4]
+
+    # create equivalency
+    equivalent_proof = Proof(proof_claim, rule_set, proof_lines)
+    updated_proof = remove_assumption(equivalent_proof)
+    return updated_proof
 
 def prove_I2() -> Proof:
     """Proves `~propositions.axiomatic_systems.I2` via
