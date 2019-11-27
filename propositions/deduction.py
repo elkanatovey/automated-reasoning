@@ -143,19 +143,72 @@ def remove_assumption(proof: Proof) -> Proof:
         assert rule == MP or len(rule.assumptions) == 0
     # Task 5.4
     new_assumptions = proof.statement.assumptions[:-1]
+    disallowed_assumption = proof.statement.assumptions[-1]
+    new_conclusion = Formula('->', disallowed_assumption,
+                             proof.statement.conclusion)
+    new_statement = InferenceRule(new_assumptions, new_conclusion)
     new_rules = set()
     new_rules.update(proof.rules)
     new_rules.update([MP, I0, I1, D])
     new_lines = []
+    updated_line_location = []
+    current_location = 0
     for line in proof.lines:
-        # case disallowed_assumption
-        if line.formula == proof.statement.assumptions[-1]:
+
+        # case line is disallowed_assumption
+        if line.formula == disallowed_assumption:
             new_lines.append(Proof.Line(Formula('->', line.formula,
                                                 line.formula), I0, []))
-        # case
-        elif
+            updated_line_location.append(current_location)
+            current_location += 1
 
-    print(1)
+        # case line is proved with MP
+        elif line.rule is MP:
+            new_assumption_locations = []
+            for assumption in line.assumptions:
+                new_assumption_locations.append(updated_line_location[assumption])
+
+            p1 = new_lines[new_assumption_locations[1]].formula
+            updated_conclusion = Formula('->', disallowed_assumption,
+                                      line.formula)
+            q1 = Formula('->', new_lines[new_assumption_locations[
+                0]].formula, updated_conclusion)
+            p1_imp_q1 = Formula('->', p1, q1)
+
+            d_line = Proof.Line(p1_imp_q1, D, [])
+            new_lines.append(d_line)
+
+            q1_line = Proof.Line(q1, MP, [new_assumption_locations[1],
+                                          len(new_lines)-1])
+            new_lines.append(q1_line)
+
+            result_line = Proof.Line(updated_conclusion, MP,
+                                     [new_assumption_locations[0],
+                                      len(new_lines)-1])
+            new_lines.append(result_line)
+
+            updated_line_location.append(current_location + 2)
+            current_location += 3
+
+        # case other inference rule or assumption
+        else:
+            new_lines.append(line)  # allowed
+
+            disallowed_imp_allowed = Formula('->', disallowed_assumption,
+                                             line.formula)
+            i1_line_formula = Formula('->', line.formula,
+                                      disallowed_imp_allowed)
+            new_lines.append(Proof.Line(i1_line_formula, I1, []))  # i1 line
+
+            new_lines.append(Proof.Line(disallowed_imp_allowed, MP, [len(
+                new_lines)-2, len(new_lines)-1]))
+
+            updated_line_location.append(current_location + 2)
+            current_location += 3
+
+    updated_proof = Proof(new_statement, new_rules, new_lines)
+    return updated_proof
+
 
 
 
