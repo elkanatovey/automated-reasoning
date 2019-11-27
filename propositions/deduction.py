@@ -269,3 +269,26 @@ def prove_by_contradiction(proof: Proof) -> Proof:
     for rule in proof.rules:
         assert rule == MP or len(rule.assumptions) == 0
     # Task 5.7
+    conclusion = proof.statement.conclusion.first
+    removed_proof = remove_assumption(proof)
+    rules = set()
+    rules.update(removed_proof.rules)
+    rules.update([N])
+    lines = list(removed_proof.lines)
+    n_formula = Formula('->', lines[-1].formula, Formula('->',conclusion,
+                                        proof.statement.assumptions[-1].first))
+    newline0 = Proof.Line(n_formula, N, [])
+    lines.append(newline0)
+    newline1 = Proof.Line(Formula('->',conclusion,
+                                  proof.statement.assumptions[-1].first),
+                          MP,[len(lines)-2, len(lines)-1 ])
+    lines.append(newline1)
+    newline2 = Proof.Line(Formula.parse('(p->p)'), I0, [])
+    lines.append(newline2)
+    newline3 = Proof.Line(proof.statement.assumptions[-1].first, MP,
+                          [len(lines)-1, len(lines)-2 ])
+    lines.append(newline3)
+    final_proof = Proof(InferenceRule(removed_proof.statement.assumptions,
+                                      proof.statement.assumptions[
+                                          -1].first), rules, lines)
+    return final_proof
