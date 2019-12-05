@@ -162,6 +162,14 @@ def reduce_assumption(proof_from_affirmation: Proof,
            proof_from_negation.statement.assumptions[-1]
     assert proof_from_affirmation.rules == proof_from_negation.rules
     # Task 6.2
+    conclusion = proof_from_affirmation.statement.conclusion
+
+    updated_affirmation = remove_assumption(proof_from_affirmation)
+    updated_negation = remove_assumption(proof_from_negation)
+    combo_proof = combine_proofs(updated_affirmation, updated_negation,
+                                 conclusion, R)
+    return combo_proof
+
 
 def prove_tautology(tautology: Formula, model: Model = frozendict()) -> Proof:
     """Proves the given tautology from the formulae that capture the given
