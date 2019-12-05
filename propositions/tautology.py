@@ -72,6 +72,55 @@ def prove_in_model(formula: Formula, model:Model) -> Proof:
     assert is_model(model)
     # Task 6.1b
 
+    # init proof stuff
+    proof_assumptions = formulae_capturing_model(model)
+    proof_rules = AXIOMATIC_SYSTEM
+    version_true = evaluate(formula, model)
+    if version_true:
+        #prove true
+        proof_conclusion = formula
+    else:
+        # prove false
+        proof_conclusion = Formula('~', formula)
+
+    proof_statement = InferenceRule(proof_assumptions, proof_conclusion)
+
+    # variable case
+    if is_variable(str(formula)):
+        return Proof(proof_statement, proof_rules, [Proof.Line(
+            proof_conclusion, None, None)])
+
+    # case phi1 -> phi2
+    elif formula.root == '->':
+        if version_true:
+            # second true
+            if evaluate(formula.second, model):
+                proof_start = prove_in_model(formula.second, model)
+                return prove_corollary(proof_start, proof_conclusion, I1)
+
+            # first false
+            else:
+                proof_start = prove_in_model(formula.first, model)
+                return prove_corollary(proof_start, proof_conclusion, I2)
+
+        # formula evaluates to false
+        else:
+            phi1_proof = prove_in_model(formula.first, model)
+            phi2_proof = prove_in_model(formula.second, model)
+            return combine_proofs(phi1_proof, phi2_proof, proof_conclusion, NI)
+
+    elif formula.root == '~':
+
+        # ~phi evaluates to true
+        if version_true:
+            return prove_in_model(formula.first, model)
+
+        # ~phi evaluates to false
+        else:
+            double_neg_removed = prove_in_model(formula.first, model)
+            return prove_corollary(double_neg_removed, proof_conclusion, NN)
+
+
 def reduce_assumption(proof_from_affirmation: Proof,
                       proof_from_negation: Proof) -> Proof:
     """Combines the given two proofs, both of the same formula `conclusion` and
