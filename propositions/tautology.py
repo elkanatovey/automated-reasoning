@@ -16,6 +16,14 @@ from propositions.semantics import *
 from propositions.operators import *
 from propositions.axiomatic_systems import *
 
+def formula_comparer(f)-> str:
+    "Compares formulas alphabetically without taking into account leading ~"
+    f2s = str(f)
+    if f2s[0] == '~':
+        return f2s[1:]
+    else:
+        return f2s
+
 def formulae_capturing_model(model: Model) -> List[Formula]:
     """Computes the formulae that capture the given model: ``'``\ `x`\ ``'``
     for each variable `x` that is assigned the value ``True`` in the given
@@ -35,6 +43,14 @@ def formulae_capturing_model(model: Model) -> List[Formula]:
     """
     assert is_model(model)
     # Task 6.1a
+    formula_list = []
+    for k, v in model.items():
+        if v:
+            formula_list.append(Formula.parse(k))
+        else:
+            formula_list.append(Formula.parse('~' + k))
+    formula_list.sort(key=formula_comparer)
+    return formula_list
 
 def prove_in_model(formula: Formula, model:Model) -> Proof:
     """Either proves the given formula or proves its negation, from the formulae
