@@ -292,6 +292,31 @@ def prove_sound_inference(rule: InferenceRule) -> Proof:
         assert formula.operators().issubset({'->', '~'})
     # Task 6.4b
 
+    # encode as tautology
+    encoded_irule = encode_as_formula(rule)
+    rule_as_tautology = proof_or_counterexample(encoded_irule)
+    if not len(rule.assumptions):
+        return rule_as_tautology
+
+    proof_assumptions = rule.assumptions
+    proof_lines = []
+    proof_lines.extend(rule_as_tautology.lines)
+    current_conclusion = rule_as_tautology.statement.conclusion
+    for assumption in proof_assumptions:
+        new_line1 = Proof.Line(assumption, None, None)
+        proof_lines.append(new_line1)
+
+        new_line2 = Proof.Line(current_conclusion.second, MP,
+                               [len(proof_lines)-1, len(proof_lines)-2])
+        proof_lines.append(new_line2)
+        current_conclusion = current_conclusion.second
+
+    new_proof = Proof(rule, AXIOMATIC_SYSTEM, proof_lines)
+
+    return new_proof
+
+
+
 def model_or_inconsistency(formulae: List[Formula]) -> Union[Model, Proof]:
     """Either finds a model in which all the given formulae hold, or proves
     ``'~(p->p)'`` from these formula.
