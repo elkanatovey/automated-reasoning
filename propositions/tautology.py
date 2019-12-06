@@ -271,6 +271,10 @@ def encode_as_formula(rule: InferenceRule) -> Formula:
         q
     """
     # Task 6.4a
+    if not len(rule.assumptions):
+        return rule.conclusion
+    return encode_as_formula(InferenceRule(rule.assumptions[:-1], Formula(
+        '->', rule.assumptions[-1], rule.conclusion)))
 
 def prove_sound_inference(rule: InferenceRule) -> Proof:
     """Proves the given sound inference rule.
