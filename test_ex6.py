@@ -21,7 +21,7 @@ def test_task2(debug=False):
 
 def test_task3(debug=False):
     test_prove_tautology(debug)
-    test_proof_or_counterexample(debug)
+    # test_proof_or_counterexample(debug)
 
 def test_task4(debug=False):
     test_encode_as_formula(debug)
@@ -51,11 +51,11 @@ def test_task9(debug=False):
     test_prove_NO(debug)
 
 pretest_validity(False)
-test_task1(True)
-test_task2(True)
+# test_task1(True)
+# test_task2(True)
 test_task3(True)
-test_task4(True)
-test_task5(True)
+# test_task4(True)
+# test_task5(True)
 #test_task6(True) # Optional
 #test_task7(True) # Optional
 #test_task8(True) # Optional

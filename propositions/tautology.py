@@ -197,6 +197,31 @@ def prove_tautology(tautology: Formula, model: Model = frozendict()) -> Proof:
     assert is_model(model)
     assert sorted(tautology.variables())[:len(model)] == sorted(model.keys())
     # Task 6.3a
+    model_pos = {}
+    model_neg = {}
+
+    # base case
+    if model.keys() == tautology.variables():
+        return prove_in_model(tautology, model)
+
+    tautology_model_dif = tautology.variables().difference(model.keys())
+    missing_vars = sorted(list(tautology_model_dif))
+
+    model_pos.update(model)
+    model_neg.update(model)
+    model_pos[missing_vars[0]] = True
+    model_neg[missing_vars[0]] = False
+
+    # one difference case
+    if len(tautology_model_dif) == 1:
+        proved_for_model_pos = prove_in_model(tautology, model_pos)
+        proved_for_model_neg = prove_in_model(tautology, model_neg)
+        return reduce_assumption(proved_for_model_pos, proved_for_model_neg)
+
+    proved_for_model_pos = prove_tautology(tautology, model_pos)
+    proved_for_model_neg = prove_tautology(tautology, model_neg)
+    return reduce_assumption(proved_for_model_pos, proved_for_model_neg)
+
 
 def proof_or_counterexample(formula: Formula) -> Union[Proof, Model]:
     """Either proves the given formula or finds a model in which it does not
