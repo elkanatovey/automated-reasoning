@@ -238,6 +238,19 @@ def proof_or_counterexample(formula: Formula) -> Union[Proof, Model]:
     """
     assert formula.operators().issubset({'->', '~'})
     # Task 6.3b
+    atomic_vars = list(formula.variables())
+    models = all_models(atomic_vars)
+
+    # look for counterexample
+    for model in models:
+        if not evaluate(formula, model):
+            return model
+
+    # prove tautology
+    return prove_tautology(formula, {})
+
+
+
 
 def encode_as_formula(rule: InferenceRule) -> Formula:
     """Encodes the given inference rule as a formula consisting of a chain of
