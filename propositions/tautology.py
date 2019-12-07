@@ -343,13 +343,12 @@ def model_or_inconsistency(formulae: List[Formula]) -> Union[Model, Proof]:
         s_vars = statement_to_check.variables()
         models = all_models(list(s_vars))
         for model in models:
-            count = 0
-            for f in statement_to_check.assumptions:
-                if evaluate(f, model):
-                    count += 1
-                else:
+            good_setting = True
+            for f in formulae:
+                if not evaluate(f, model):
+                    good_setting = False
                     break
-            if count == len(statement_to_check.assumptions):
+            if good_setting:
                 return model
 
 def prove_in_model_full(formula: Formula, model: Model) -> Proof:
