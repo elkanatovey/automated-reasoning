@@ -333,6 +333,24 @@ def model_or_inconsistency(formulae: List[Formula]) -> Union[Model, Proof]:
     for formula in formulae:
         assert formula.operators().issubset({'->', '~'})
     # Task 6.5
+    i0_neg = Formula.parse('~(p->p)')
+    statement_to_check = InferenceRule(formulae, i0_neg)
+
+    # this means the rules assumptions don't have a joint model
+    if is_sound_inference(statement_to_check):
+        return prove_sound_inference(statement_to_check)
+    else:
+        s_vars = statement_to_check.variables()
+        models = all_models(list(s_vars))
+        for model in models:
+            count = 0
+            for f in statement_to_check.assumptions:
+                if evaluate(f, model):
+                    count += 1
+                else:
+                    break
+            if count == len(statement_to_check.assumptions):
+                return model
 
 def prove_in_model_full(formula: Formula, model: Model) -> Proof:
     """Either proves the given formula or proves its negation, from the formulae
