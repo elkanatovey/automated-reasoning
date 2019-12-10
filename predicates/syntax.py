@@ -150,6 +150,60 @@ class Term:
         """
         # Task 7.3.1
 
+        if is_variable(s[0]):
+            i = 1
+            while i <= len(s):
+                if is_variable(s[0:i]):
+                    i += 1
+                else:
+                    i -= 1
+                    break
+            return Term(s[:i]), s[i:]
+
+        elif is_constant(s[0]):
+            i = 1
+            while i <= len(s):
+                if is_constant(s[0:i]):
+                    i += 1
+                else:
+                    i -= 1
+                    break
+            return Term(s[:i]), s[i:]
+
+        elif is_function(s[0]):
+            i = 1
+            while i <= len(s):
+                if is_function(s[0:i]):
+                    i += 1
+                else:
+                    i -= 1
+                    break
+
+            # bad input case
+            if not((not len(s) == i) and (not s[i] != '(')):
+                return None, s
+
+            func_name = s[:i]
+
+            func_params, to_parse = Term.parse_prefix(s[i+1:])
+            if len(to_parse) == 0:
+                return None, s
+
+            elif to_parse[0] == ')':
+                return Term(func_name, [func_params]), to_parse[1:]
+
+            # case ,
+            else:
+                params = [func_params]
+                while to_parse[0] != ')':
+                    new_param, to_parse = Term.parse_prefix(
+                        to_parse[1:])
+                    params.append(new_param)
+                return Term(func_name, params), to_parse[1:]
+
+        else:
+            return None, s
+
     @staticmethod
     def parse(s: str) -> Term:
         """Parses the given valid string representation into a term.
