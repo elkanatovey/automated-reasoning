@@ -541,8 +541,8 @@ class Formula:
                 binary_op = remainder[:2]
                 i = 2
             second, remainder = Formula.parse_prefix(remainder[i:])
-            return Formula(binary_op, first, second), remainder[1:]
-
+            if second is not None and len(remainder) > 0 and remainder[0] == ')':
+                return Formula(binary_op, first, second), remainder[1:]
 
         # equality case
         else:
@@ -562,6 +562,7 @@ class Formula:
             A formula whose standard string representation is the given string.
         """
         # Task 7.4.2
+        return Formula.parse_prefix(s)[0]
 
     def constants(self) -> Set[str]:
         """Finds all constant names in the current formula.
