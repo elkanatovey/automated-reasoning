@@ -102,6 +102,10 @@ class Term:
             The standard string representation of the current term.
         """
         # Task 7.1
+        if is_constant(self.root) or is_variable(self.root):
+            return self.root
+        return self.root + '('+ ','.join([str(self.arguments[i]) for i in
+                                          range(len(self.arguments))]) + ')'
 
     def __eq__(self, other: object) -> bool:
         """Compares the current term with the given one.
