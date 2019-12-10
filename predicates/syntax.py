@@ -364,6 +364,23 @@ class Formula:
         """
         # Task 7.2
 
+        if is_equality(self.root):
+            return str(self.arguments[0]) + self.root + \
+                   str(self.arguments[1])
+
+        elif is_relation(self.root):
+            return self.root + '(' + ','.join([str(self.arguments[i]) for i in
+                                       range(len(self.arguments))]) + ')'
+
+        elif is_unary(self.root):
+            return self.root + str(self.first)
+
+        elif is_quantifier(self.root):
+            return self.root + self.variable + '[' + str(self.predicate) + ']'
+
+        elif is_binary(self.root):
+            return '('+str(self.first) + self.root + str(self.second) + ')'
+
     def __eq__(self, other: object) -> bool:
         """Compares the current formula with the given one.
 
