@@ -224,6 +224,15 @@ class Term:
         Returns:
             A set of all constant names used in the current term.
         """
+        if is_variable(self.root):
+            return set()
+        elif is_constant(self.root):
+            return {self.root}
+        elif is_function(self.root):
+            all_constants = set()
+            for k in self.arguments:
+                all_constants = all_constants.union(k.constants())
+            return all_constants
         # Task 7.5.1
 
     def variables(self) -> Set[str]:
@@ -232,6 +241,16 @@ class Term:
         Returns:
             A set of all variable names used in the current term.
         """
+        if is_constant(self.root):
+            return set()
+        elif is_variable(self.root):
+            return {self.root}
+        elif is_function(self.root):
+            all_variables = set()
+            for k in self.arguments:
+                all_variables = all_variables.union(k.variables())
+            return all_variables
+
         # Task 7.5.2
 
     def functions(self) -> Set[Tuple[str, int]]:
@@ -242,6 +261,8 @@ class Term:
             A set of pairs of function name and arity (number of arguments) for
             all function names used in the current term.
         """
+
+
         # Task 7.5.3
 
     def substitute(self, substitution_map: Mapping[str, Term],
