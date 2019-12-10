@@ -632,6 +632,24 @@ class Formula:
         """
         # Task 7.6.2
 
+        if is_unary(self.root):
+            return self.first.variables()
+
+        elif is_equality(self.root):
+            return self.arguments[0].variables() | self.arguments[1].variables()
+
+        elif is_binary(self.root):
+            return self.first.variables() | self.second.variables()
+
+        elif is_relation(self.root):
+            all_variables = set()
+            for k in self.arguments:
+                all_variables = all_variables.union(k.variables())
+            return all_variables
+
+        elif is_quantifier(self.root):
+            return self.predicate.variables() | {self.variable}
+
     def free_variables(self) -> Set[str]:
         """Finds all variable names that are free in the current formula.
 
