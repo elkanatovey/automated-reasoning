@@ -686,6 +686,24 @@ class Formula:
             A set of pairs of function name and arity (number of arguments) for
             all function names used in the current formula.
         """
+        if is_unary(self.root):
+            return self.first.functions()
+
+        elif is_equality(self.root):
+            return self.arguments[0].functions() | self.arguments[1].functions()
+
+        elif is_binary(self.root):
+            return self.first.functions() | self.second.functions()
+
+        elif is_relation(self.root):
+            all_variables = set()
+            for k in self.arguments:
+                all_variables = all_variables.union(k.functions())
+            return all_variables
+
+        elif is_quantifier(self.root):
+            return self.predicate.functions()
+
         # Task 7.6.4
 
     def relations(self) -> Set[Tuple[str, int]]:
