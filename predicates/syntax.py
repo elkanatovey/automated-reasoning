@@ -481,6 +481,76 @@ class Formula:
         """
         # Task 7.4.1
 
+        if is_relation(s[0]):
+            i = 1
+            while i <= len(s):
+                if is_relation(s[0:i]):
+                    i += 1
+                else:
+                    i -= 1
+                    break
+
+            rel_name = s[:i]
+
+            # case no args
+            if s[i+1] == ')':
+                return Formula(rel_name, []), s[i+2:]
+
+            rel_param, to_parse = Term.parse_prefix(s[i+1:])
+            if len(to_parse) == 0:
+                return None, s
+
+            relationship_params = [rel_param]
+            if to_parse[0] == ')':
+                return Formula(rel_name, relationship_params), to_parse[1:]
+
+            # case ,
+            else:
+                while to_parse[0] != ')':
+                    new_param, to_parse = Term.parse_prefix(
+                        to_parse[1:])
+                    relationship_params.append(new_param)
+                return Formula(rel_name, relationship_params), to_parse[1:]
+
+
+        elif is_unary(s[0]):
+            f, r = Formula.parse_prefix(s[1:])
+            return Formula(s[0], f), r
+
+        elif is_quantifier(s[0]):
+            i = 2
+            while i <= len(s):
+                if is_variable(s[1:i]):
+                    i += 1
+                else:
+                    i -= 1
+                    break
+            quantifier = s[0]
+            quantified_var = s[1:i]
+            quantified_formula, remainder = Formula.parse_prefix(s[i+1:])
+            return Formula(quantifier, quantified_var, quantified_formula), \
+                   remainder[1:]
+
+        # binary case
+        elif s[0] == '(':
+            first, remainder = Formula.parse_prefix(s[1:])
+            if is_binary(s[0]):
+                binary_op = s[0]
+                i = 1
+            else:
+                binary_op = s[:2]
+                i = 2
+            second, remainder = Formula.parse_prefix(remainder[i:])
+            return Formula(binary_op, first, second), remainder[1:]
+
+
+        # equality case
+        else:
+            first, remainder = Term.parse_prefix(s)
+            op = remainder[0]
+            second, remainder = Term.parse_prefix(remainder[1:])
+            return Formula(op, first, second), remainder
+
     @staticmethod
     def parse(s: str) -> Formula:
         """Parses the given valid string representation into a formula.
