@@ -249,3 +249,13 @@ class Model(Generic[T]):
                 assert relation in self.relation_meanings and \
                        self.relation_arities[relation] in {-1, arity}
         # Task 7.9
+        for formula in formulas:
+            free_vars = formula.free_variables()
+            formula_to_check = formula
+            for var in free_vars:
+                formula_to_check = Formula('A', var, formula_to_check)
+            if not self.evaluate_formula(formula_to_check,{}):
+                return False
+        return True
+
+
