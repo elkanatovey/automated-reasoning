@@ -545,7 +545,6 @@ class Formula:
                     relationship_params.append(new_param)
                 return Formula(rel_name, relationship_params), to_parse[1:]
 
-
         elif is_unary(s[0]):
             f, r = Formula.parse_prefix(s[1:])
             return Formula(s[0], f), r
@@ -623,7 +622,6 @@ class Formula:
         elif is_quantifier(self.root):
             return self.predicate.constants()
 
-
     def variables(self) -> Set[str]:
         """Finds all variable names in the current formula.
 
@@ -677,7 +675,6 @@ class Formula:
         elif is_quantifier(self.root):
             return self.predicate.free_variables() - {self.variable}
 
-
     def functions(self) -> Set[Tuple[str, int]]:
         """Finds all function names in the current formula, along with their
         arities.
@@ -714,6 +711,22 @@ class Formula:
             A set of pairs of relation name and arity (number of arguments) for
             all relation names used in the current formula.
         """
+        if is_unary(self.root):
+            return self.first.relations()
+
+        elif is_equality(self.root):
+            return set()
+
+        elif is_binary(self.root):
+            return self.first.relations() | self.second.relations()
+
+        elif is_relation(self.root):
+            all_relations = {(self.root, len(self.arguments))}
+            return all_relations
+
+        elif is_quantifier(self.root):
+            return self.predicate.relations()
+
         # Task 7.6.5
 
     def substitute(self, substitution_map: Mapping[str, Term],
