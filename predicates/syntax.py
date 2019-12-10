@@ -659,6 +659,25 @@ class Formula:
         """
         # Task 7.6.3
 
+        if is_unary(self.root):
+            return self.first.free_variables()
+
+        elif is_equality(self.root):
+            return self.arguments[0].variables() | self.arguments[1].variables()
+
+        elif is_binary(self.root):
+            return self.first.free_variables() | self.second.free_variables()
+
+        elif is_relation(self.root):
+            all_variables = set()
+            for k in self.arguments:
+                all_variables = all_variables.union(k.variables())
+            return all_variables
+
+        elif is_quantifier(self.root):
+            return self.predicate.free_variables() - {self.variable}
+
+
     def functions(self) -> Set[Tuple[str, int]]:
         """Finds all function names in the current formula, along with their
         arities.
