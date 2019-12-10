@@ -216,6 +216,8 @@ class Term:
         """
         # Task 7.3.2
 
+        return Term.parse_prefix(s)[0]
+
     def constants(self) -> Set[str]:
         """Finds all constant names in the current term.
 
