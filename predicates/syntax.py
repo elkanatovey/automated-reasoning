@@ -605,6 +605,25 @@ class Formula:
         """
         # Task 7.6.1
 
+        if is_unary(self.root):
+            return self.first.constants()
+
+        elif is_equality(self.root):
+            return self.arguments[0].constants() | self.arguments[1].constants()
+
+        elif is_binary(self.root):
+            return self.first.constants() | self.second.constants()
+
+        elif is_relation(self.root):
+            all_constants = set()
+            for k in self.arguments:
+                all_constants = all_constants.union(k.constants())
+            return all_constants
+
+        elif is_quantifier(self.root):
+            return self.predicate.constants()
+
+
     def variables(self) -> Set[str]:
         """Finds all variable names in the current formula.
 
