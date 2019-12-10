@@ -534,11 +534,11 @@ class Formula:
         # binary case
         elif s[0] == '(':
             first, remainder = Formula.parse_prefix(s[1:])
-            if is_binary(s[0]):
-                binary_op = s[0]
+            if is_binary(remainder[0]):
+                binary_op = remainder[0]
                 i = 1
             else:
-                binary_op = s[:2]
+                binary_op = remainder[:2]
                 i = 2
             second, remainder = Formula.parse_prefix(remainder[i:])
             return Formula(binary_op, first, second), remainder[1:]
@@ -549,7 +549,7 @@ class Formula:
             first, remainder = Term.parse_prefix(s)
             op = remainder[0]
             second, remainder = Term.parse_prefix(remainder[1:])
-            return Formula(op, first, second), remainder
+            return Formula(op, [first, second]), remainder
 
     @staticmethod
     def parse(s: str) -> Formula:
