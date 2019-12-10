@@ -683,6 +683,7 @@ class Formula:
             A set of pairs of function name and arity (number of arguments) for
             all function names used in the current formula.
         """
+        # Task 7.6.4
         if is_unary(self.root):
             return self.first.functions()
 
@@ -701,8 +702,6 @@ class Formula:
         elif is_quantifier(self.root):
             return self.predicate.functions()
 
-        # Task 7.6.4
-
     def relations(self) -> Set[Tuple[str, int]]:
         """Finds all relation names in the current formula, along with their
         arities.
@@ -711,6 +710,7 @@ class Formula:
             A set of pairs of relation name and arity (number of arguments) for
             all relation names used in the current formula.
         """
+        # Task 7.6.5
         if is_unary(self.root):
             return self.first.relations()
 
@@ -726,8 +726,6 @@ class Formula:
 
         elif is_quantifier(self.root):
             return self.predicate.relations()
-
-        # Task 7.6.5
 
     def substitute(self, substitution_map: Mapping[str, Term],
                    forbidden_variables: AbstractSet[str] = frozenset()) -> \
