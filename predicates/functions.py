@@ -65,6 +65,23 @@ def replace_functions_with_relations_in_model(model: Model[T]) -> Model[T]:
                model.relation_meanings
     # Task 8.1
 
+    new_relation_meanings = dict(model.relation_meanings)
+
+    # go over each function to convert
+    for function_name in model.function_meanings:
+        r_name = function_name_to_relation_name(function_name)
+        f_mapping = model.function_meanings[function_name]
+        new_relation_meanings.update({r_name: set()})
+
+        # iterate over valid settings and add to relation
+        for assignment in f_mapping:
+            assignment_list = list(assignment)
+            assignment_list.insert(0, f_mapping[assignment])
+            new_relation_meanings[r_name].add(tuple(assignment_list))
+
+    return Model(model.universe, model.constant_meanings, new_relation_meanings, {})
+
+
 def replace_relations_with_functions_in_model(model: Model[T],
                                               original_functions:
                                               AbstractSet[str]) -> \
