@@ -313,6 +313,50 @@ def replace_functions_with_relations_in_formulas(formulas:
         for variable in formula.variables():
             assert variable[0] != 'z'
     # Task 8.5
+    formula_set = set()
+
+    for formula in formulas:
+        functions_in_formula = formula.functions()
+        updated_formula = replace_functions_with_relations_in_formula(formula)
+
+        for function in functions_in_formula:
+            current_z = next(fresh_variable_name_generator)
+            func_args = [Term(current_z)]
+            for i in range(0, function[1]):
+                func_args.append(Term('x'+str(i)))
+            func_as_relation = Formula(function_name_to_relation_name(
+                function[0]),func_args)
+            exists_qualifier = Formula('E', current_z, func_as_relation)
+
+            all_qualifier = exists_qualifier
+            for var in func_args[1:]:
+                all_qualifier = Formula('A', var.root, exists_qualifier)
+
+            current_z1 = next(fresh_variable_name_generator)
+            func_args[0] = Term(current_z1)
+            equality1 = Formula(function_name_to_relation_name(
+                function[0]),func_args)
+
+            current_z2 = next(fresh_variable_name_generator)
+            func_args[0] = Term(current_z2)
+            equality2 = Formula(function_name_to_relation_name(
+                function[0]),func_args)
+
+            z1_eq_z2 = Formula("=", [Term(current_z1), Term(current_z2)])
+            f1_and_f2 = Formula("&", equality1, equality2)
+            implies = Formula("->", f1_and_f2, z1_eq_z2)
+            all1 = Formula("A", current_z1, implies)
+            all2 = Formula("A", current_z2, all1)
+            for var in func_args[1:]:
+                all2 = Formula("A", var.root, all2)
+
+            formula_and = Formula("&", all_qualifier, all2)
+            formula_set.add(formula_and)
+
+        formula_set.add(updated_formula)
+
+    return formula_set
+
         
 def replace_equality_with_SAME_in_formulas(formulas: AbstractSet[Formula]) -> \
         Set[Formula]:
