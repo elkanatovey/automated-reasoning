@@ -108,6 +108,48 @@ def replace_relations_with_functions_in_model(model: Model[T],
                model.relation_meanings
     # Task 8.2
 
+    for f_name in original_functions:
+        if function_name_to_relation_name(f_name) not in \
+                model.relation_meanings.keys():
+            return None
+
+    new_function_meanings = dict(model.function_meanings)
+    updated_relation_meanings = dict()
+
+    # go over each relation to convert
+
+    for relation_name in model.relation_meanings:
+        f_name = relation_name_to_function_name(relation_name)
+        if f_name not in original_functions:
+            updated_relation_meanings.update({relation_name: \
+                model.relation_meanings[relation_name]})
+            continue
+
+        r_mapping = model.relation_meanings[relation_name]
+        new_function_meanings.update({f_name: dict()})
+
+        # iterate over valid settings and add to relation
+
+        checker = set()
+        for assignment in r_mapping:
+
+            if(len(assignment)< 2):
+                return None
+
+
+            new_function_meanings[f_name][assignment[1:]] = \
+                assignment[0]
+            if assignment[1:] in checker:
+                return None
+            checker.add(assignment[1:])
+
+        if len(checker) < len(model.universe)**(model.relation_arities[
+                                                       relation_name] - 1):
+            return None
+
+    return Model(model.universe, model.constant_meanings, updated_relation_meanings,
+                 new_function_meanings)
+
 def compile_term(term: Term) -> List[Formula]:
     """Syntactically compiles the given term into a list of single-function
     invocation steps.
