@@ -13,6 +13,7 @@ from logic_utils import fresh_variable_name_generator
 from predicates.syntax import *
 from predicates.semantics import *
 
+
 def function_name_to_relation_name(function: str) -> str:
     """Converts the given function name to a canonically corresponding relation
     name.
@@ -26,6 +27,7 @@ def function_name_to_relation_name(function: str) -> str:
     """
     assert is_function(function)
     return function[0].upper() + function[1:]
+
 
 def relation_name_to_function_name(relation: str) -> str:
     """Converts the given relation name to a canonically corresponding function
@@ -41,6 +43,7 @@ def relation_name_to_function_name(relation: str) -> str:
     """
     assert is_relation(relation)
     return relation[0].lower() + relation[1:]
+
 
 def replace_functions_with_relations_in_model(model: Model[T]) -> Model[T]:
     """Converts the given model to a canonically corresponding model without any
@@ -79,7 +82,8 @@ def replace_functions_with_relations_in_model(model: Model[T]) -> Model[T]:
             assignment_list.insert(0, f_mapping[assignment])
             new_relation_meanings[r_name].add(tuple(assignment_list))
 
-    return Model(model.universe, model.constant_meanings, new_relation_meanings, {})
+    return Model(model.universe, model.constant_meanings,
+                 new_relation_meanings, {})
 
 
 def replace_relations_with_functions_in_model(model: Model[T],
@@ -122,7 +126,8 @@ def replace_relations_with_functions_in_model(model: Model[T],
         f_name = relation_name_to_function_name(relation_name)
         if f_name not in original_functions:
             updated_relation_meanings.update({relation_name: \
-                model.relation_meanings[relation_name]})
+                                                  model.relation_meanings[
+                                                      relation_name]})
             continue
 
         r_mapping = model.relation_meanings[relation_name]
@@ -133,9 +138,8 @@ def replace_relations_with_functions_in_model(model: Model[T],
         checker = set()
         for assignment in r_mapping:
 
-            if(len(assignment)< 2):
+            if (len(assignment) < 2):
                 return None
-
 
             new_function_meanings[f_name][assignment[1:]] = \
                 assignment[0]
@@ -143,13 +147,13 @@ def replace_relations_with_functions_in_model(model: Model[T],
                 return None
             checker.add(assignment[1:])
 
-        if len(checker) < len(model.universe)**(model.relation_arities[
-                                                       relation_name] - 1):
+        if len(checker) < len(model.universe) ** (model.relation_arities[
+                                                      relation_name] - 1):
             return None
 
-    return Model(model.universe, model.constant_meanings, updated_relation_meanings,
+    return Model(model.universe, model.constant_meanings,
+                 updated_relation_meanings,
                  new_function_meanings)
-
 
 
 def compile_term(term: Term) -> List[Formula]:
@@ -216,8 +220,8 @@ def replace_functions_with_relations_in_formula(formula: Formula) -> Formula:
         `replace_function_with_relations_in_model`\ ``(``\ `model`\ ``)``.
     """
     assert len({function_name_to_relation_name(function) for
-                function,arity in formula.functions()}.intersection(
-                    {relation for relation,arity in formula.relations()})) == 0
+                function, arity in formula.functions()}.intersection(
+        {relation for relation, arity in formula.relations()})) == 0
     for variable in formula.variables():
         assert variable[0] != 'z'
     # Task 8.4
@@ -243,7 +247,7 @@ def replace_functions_with_relations_in_formula(formula: Formula) -> Formula:
             r_name = function_name_to_relation_name(compiled_exp.arguments[
                                                         1].root)
             r_args = [compiled_exp.arguments[0]] + list(compiled_exp.arguments[
-                1].arguments)
+                                                            1].arguments)
             r_exp = Formula(r_name, r_args)
 
             current_exp = Formula('->', r_exp, current_exp)
@@ -265,14 +269,12 @@ def replace_functions_with_relations_in_formula(formula: Formula) -> Formula:
         return Formula(formula.root,
                        replace_functions_with_relations_in_formula(
                            formula.first),
-                       replace_functions_with_relations_in_formula(formula.second))
-
-
-
+                       replace_functions_with_relations_in_formula(
+                           formula.second))
 
 
 def replace_functions_with_relations_in_formulas(formulas:
-                                                 AbstractSet[Formula]) -> \
+AbstractSet[Formula]) -> \
         Set[Formula]:
     """Syntactically converts the given set of formulas to a set of formulas
     that do not contain any function invocations, and is "two-way
@@ -304,11 +306,11 @@ def replace_functions_with_relations_in_formulas(formulas:
            formulas, is a model and the given formulas hold in it.
     """
     assert len(set.union(*[{function_name_to_relation_name(function) for
-                            function,arity in formula.functions()}
+                            function, arity in formula.functions()}
                            for formula in formulas]).intersection(
-                               set.union(*[{relation for relation,arity in
-                                            formula.relations()} for
-                                           formula in formulas]))) == 0
+        set.union(*[{relation for relation, arity in
+                     formula.relations()} for
+                    formula in formulas]))) == 0
     for formula in formulas:
         for variable in formula.variables():
             assert variable[0] != 'z'
@@ -323,9 +325,9 @@ def replace_functions_with_relations_in_formulas(formulas:
             current_z = next(fresh_variable_name_generator)
             func_args = [Term(current_z)]
             for i in range(0, function[1]):
-                func_args.append(Term('x'+str(i)))
+                func_args.append(Term('x' + str(i)))
             func_as_relation = Formula(function_name_to_relation_name(
-                function[0]),func_args)
+                function[0]), func_args)
             exists_qualifier = Formula('E', current_z, func_as_relation)
 
             all_qualifier = exists_qualifier
@@ -335,12 +337,12 @@ def replace_functions_with_relations_in_formulas(formulas:
             current_z1 = next(fresh_variable_name_generator)
             func_args[0] = Term(current_z1)
             equality1 = Formula(function_name_to_relation_name(
-                function[0]),func_args)
+                function[0]), func_args)
 
             current_z2 = next(fresh_variable_name_generator)
             func_args[0] = Term(current_z2)
             equality2 = Formula(function_name_to_relation_name(
-                function[0]),func_args)
+                function[0]), func_args)
 
             z1_eq_z2 = Formula("=", [Term(current_z1), Term(current_z2)])
             f1_and_f2 = Formula("&", equality1, equality2)
@@ -357,7 +359,22 @@ def replace_functions_with_relations_in_formulas(formulas:
 
     return formula_set
 
-        
+
+def same_helper(formula: Formula) -> Formula:
+    if is_equality(formula.root):
+        return Formula("SAME", formula.arguments)
+    if is_relation(formula.root):
+        return formula
+    if is_unary(formula.root):
+        return Formula("~", same_helper(formula.first))
+    if is_binary(formula.root):
+        return Formula(formula.root, same_helper(formula.first),
+                       same_helper(formula.second))
+    if is_quantifier(formula.root):
+        return Formula(formula.root, formula.variable,
+                       same_helper(formula.predicate))
+
+
 def replace_equality_with_SAME_in_formulas(formulas: AbstractSet[Formula]) -> \
         Set[Formula]:
     """Syntactically converts the given set of formulas to a canonically
@@ -383,9 +400,39 @@ def replace_equality_with_SAME_in_formulas(formulas: AbstractSet[Formula]) -> \
     for formula in formulas:
         assert len(formula.functions()) == 0
         assert 'SAME' not in \
-               {relation for relation,arity in formula.relations()}
+               {relation for relation, arity in formula.relations()}
     # Task 8.6
-        
+    return_set = set()
+
+    for formula in formulas:
+        samed_formula = same_helper(formula)
+        return_set.add(samed_formula)
+
+        relations = formula.relations()
+        for relation in relations:
+            x_lst = []
+            y_lst = []
+            for i in range(0, relation[1]):
+                x_lst = x_lst + [Term('x'+str(i))]
+                y_lst = y_lst + [Term('y'+str(i))]
+            formula_y = Formula(relation[0], y_lst)
+            formula_x = Formula(relation[0], x_lst)
+            x_means_y = Formula('->', formula_x, formula_y)
+            x_means_y = Formula('->', Formula('SAME', [x_lst[-1], y_lst[-1]]),
+                                x_means_y)
+            for i in range(0, relation[1] - 1):
+                x_means_y = Formula('&',Formula('SAME', [x_lst[i],
+                                                         y_lst[i]]), x_means_y)
+            for i in range(0, relation[1]):
+                x_means_y = Formula('A',x_lst[i].root, x_means_y)
+                x_means_y = Formula('A',y_lst[i].root, x_means_y)
+
+            return_set.add(x_means_y)
+    return_set.add(Formula.parse("Ax[SAME(x,x)]"))
+    return_set.add(Formula.parse("Ax[Ay[((SAME(x,y)->SAME(y,x))&(SAME(y,x)->SAME(x,y)))]]"))
+    return_set.add(Formula.parse("Ax[Ay[Az[((SAME(x,y)&SAME(y,z))->SAME(x,z))]]]"))
+    return return_set
+
 def add_SAME_as_equality_in_model(model: Model[T]) -> Model[T]:
     """Adds a meaning for the relation name ``'SAME'`` in the given model, that
     canonically corresponds to equality in the given model.
@@ -402,7 +449,8 @@ def add_SAME_as_equality_in_model(model: Model[T]) -> Model[T]:
     """
     assert 'SAME' not in model.relation_meanings
     # Task 8.7
-    
+
+
 def make_equality_as_SAME_in_model(model: Model[T]) -> Model[T]:
     """Converts the given model to a model where equality coincides with the
     meaning of ``'SAME'`` in the given model, in the sense that any set of
