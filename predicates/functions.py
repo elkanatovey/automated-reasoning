@@ -222,6 +222,55 @@ def replace_functions_with_relations_in_formula(formula: Formula) -> Formula:
         assert variable[0] != 'z'
     # Task 8.4
 
+    # cases
+
+    if is_relation(formula.root) or is_equality(formula.root):
+
+        z_list = list()
+        z_names = list()
+
+        for argument in formula.arguments:
+            if is_function(argument.root):
+                z_list.extend(compile_term(argument))
+                z_names.append(z_list[-1].arguments[0])
+            else:
+                z_names.append(argument)
+
+        # original R with z's as args
+        current_exp = Formula(formula.root, z_names)
+
+        for compiled_exp in reversed(z_list):
+            r_name = function_name_to_relation_name(compiled_exp.arguments[
+                                                        1].root)
+            r_args = [compiled_exp.arguments[0]] + list(compiled_exp.arguments[
+                1].arguments)
+            r_exp = Formula(r_name, r_args)
+
+            current_exp = Formula('->', r_exp, current_exp)
+            current_exp = Formula('A', compiled_exp.arguments[0].root,
+                                  current_exp)
+
+        return current_exp
+
+    elif is_quantifier(formula.root):
+        return Formula(formula.root, formula.variable,
+                       replace_functions_with_relations_in_formula(
+                           formula.predicate))
+
+    elif is_unary(formula.root):
+        return Formula('~', replace_functions_with_relations_in_formula(
+            formula.first))
+
+    elif is_binary(formula.root):
+        return Formula(formula.root,
+                       replace_functions_with_relations_in_formula(
+                           formula.first),
+                       replace_functions_with_relations_in_formula(formula.second))
+
+
+
+
+
 def replace_functions_with_relations_in_formulas(formulas:
                                                  AbstractSet[Formula]) -> \
         Set[Formula]:
