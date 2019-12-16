@@ -418,13 +418,16 @@ def replace_equality_with_SAME_in_formulas(formulas: AbstractSet[Formula]) -> \
             formula_y = Formula(relation[0], y_lst)
             formula_x = Formula(relation[0], x_lst)
             x_means_y = Formula('->', formula_x, formula_y)
-            x_means_y = Formula('->', Formula('SAME', [x_lst[-1], y_lst[-1]]),
-                                x_means_y)
+
+            a_joined = Formula('SAME', [x_lst[-1], y_lst[-1]])
             for i in range(0, relation[1] - 1):
-                x_means_y = Formula('&',Formula('SAME', [x_lst[i],
-                                                         y_lst[i]]), x_means_y)
-            for i in range(0, relation[1]):
+                a_joined = Formula('&',Formula('SAME', [x_lst[i],
+                                                         y_lst[i]]), a_joined)
+            x_means_y = Formula('->', a_joined,
+                                x_means_y)
+            for i in reversed(range(0, relation[1])):
                 x_means_y = Formula('A',x_lst[i].root, x_means_y)
+            for i in reversed(range(0, relation[1])):
                 x_means_y = Formula('A',y_lst[i].root, x_means_y)
 
             return_set.add(x_means_y)
