@@ -453,6 +453,17 @@ def add_SAME_as_equality_in_model(model: Model[T]) -> Model[T]:
     assert 'SAME' not in model.relation_meanings
     # Task 8.7
 
+    updated_relation_meanings = dict(model.relation_meanings)
+
+    same_meanings = list()
+
+    for const in model.universe:
+        same_meanings.append((const, const))
+
+    updated_relation_meanings.update({"SAME": set(same_meanings)})
+
+    return Model(model.universe, model.constant_meanings, updated_relation_meanings, model.function_meanings)
+
 
 def make_equality_as_SAME_in_model(model: Model[T]) -> Model[T]:
     """Converts the given model to a model where equality coincides with the
