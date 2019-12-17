@@ -489,3 +489,53 @@ def make_equality_as_SAME_in_model(model: Model[T]) -> Model[T]:
            model.relation_arities['SAME'] == 2
     assert len(model.function_meanings) == 0
     # Task 8.8
+
+    equality_meanings = set(model.relation_meanings["SAME"])
+
+    equivalence_classes = dict()
+    for first, second in equality_meanings:
+        if first in equivalence_classes.keys():
+            equivalence_classes[first].add(second)
+            continue
+        flag = True
+        for key in equivalence_classes.keys():
+            if (first, key) in equality_meanings:
+                equivalence_classes[key].union({first, second})
+                flag = False
+                break
+        if flag:
+            equivalence_classes[first] = {second}
+
+    classes = dict()
+    for key in equivalence_classes.keys():
+        for elem in equivalence_classes[key]:
+            if elem in equivalence_classes.keys():
+                continue
+            classes[elem] = key
+
+    new_constants_meanings = dict()
+    for key in model.constant_meanings.keys():
+        if model.constant_meanings[key] in equivalence_classes.keys():
+            new_constants_meanings[key] = model.constant_meanings[key]
+        else:
+            for rep in equivalence_classes.keys():
+                if model.constant_meanings[key] in equivalence_classes[rep]:
+                    new_constants_meanings[key] = rep
+
+    new_relations_meanings = dict()
+    for relation in model.relation_meanings.keys():
+        if relation == "SAME":
+            continue
+        relation_list1 = list()
+        for meanings in model.relation_meanings[relation]:
+            relation_list2 = list()
+            for elem in meanings:
+                if elem in equivalence_classes.keys():
+                    relation_list2.append(elem)
+                else:
+                    relation_list2.append(classes[elem])
+            relation_list1.append(tuple(relation_list2))
+        new_relations_meanings[relation] = set(relation_list1)
+
+    return Model(equivalence_classes.keys(), new_constants_meanings, new_relations_meanings, model.function_meanings)
+
