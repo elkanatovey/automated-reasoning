@@ -805,6 +805,32 @@ class Formula:
             assert is_variable(variable)
         # Task 9.2
 
+        #substitute terms
+        if is_equality(self.root) or is_relation(self.root):
+            new_arguments = []
+            for arg in self.arguments:
+                new_arguments.append(arg.substitute(substitution_map, forbidden_variables))
+            return Formula(self.root, new_arguments)
+
+        #substitute formulas
+        if is_unary(self.root):
+            return Formula("~", self.first.substitute(substitution_map, forbidden_variables))
+
+        if is_binary(self.root):
+            return Formula(self.root, self.first.substitute(
+                substitution_map, forbidden_variables),
+                           self.second.substitute(substitution_map, forbidden_variables))
+
+        if is_quantifier(self.root):
+            checker_set = set(forbidden_variables)
+            checker_set.add(self.variable)
+            return Formula(self.root, self.variable,
+                           self.predicate.substitute(substitution_map, checker_set))
+
+
+
+
+
     def propositional_skeleton(self) -> Tuple[PropositionalFormula,
                                               Mapping[str, Formula]]:
         """Computes a propositional skeleton of the current formula.
