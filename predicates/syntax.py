@@ -313,6 +313,25 @@ class Term:
         for variable in forbidden_variables:
             assert is_variable(variable)
         # Task 9.1
+        if is_variable(self.root) and self.root in substitution_map:
+            if substitution_map[self.root] in forbidden_variables:
+                raise ForbiddenVariableError(str(substitution_map[self.root])) #TODO
+            else:
+                return substitution_map[self.root]
+
+        elif is_constant(self.root) and self.root in substitution_map:
+            return substitution_map[self.root]
+
+        elif is_function(self.root):
+            new_arguments = []
+            for arg in self.arguments:
+                new_arguments.append(arg.substitute(substitution_map, forbidden_variables))
+            if self.root in substitution_map:
+                return Term(substitution_map[self.root].root, new_arguments)
+            else:
+                return Term(self.root, new_arguments)
+
+        return self
 
 def is_equality(s: str) -> bool:
     """Checks if the given string is the equality relation.
