@@ -823,9 +823,13 @@ class Formula:
 
         if is_quantifier(self.root):
             checker_set = set(forbidden_variables)
-            checker_set.add(self.variable)
-            return Formula(self.root, self.variable,
-                           self.predicate.substitute(substitution_map, checker_set))
+            new_substitution_map = substitution_map.copy()
+            if self.variable not in self.free_variables():
+                checker_set.add(self.variable)
+                if self.variable in substitution_map.keys():
+                    del new_substitution_map[self.variable]
+            return Formula(self.root, self.variable, self.predicate.substitute(new_substitution_map, checker_set))
+        return self
 
 
 
