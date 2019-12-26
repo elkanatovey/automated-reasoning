@@ -831,10 +831,6 @@ class Formula:
             return Formula(self.root, self.variable, self.predicate.substitute(new_substitution_map, checker_set))
         return self
 
-
-
-
-
     def propositional_skeleton(self) -> Tuple[PropositionalFormula,
                                               Mapping[str, Formula]]:
         """Computes a propositional skeleton of the current formula.
