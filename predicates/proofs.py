@@ -251,7 +251,8 @@ class Schema:
                 bad_vars = relations_instantiation_map[formula.root].free_variables().intersection(
                     bound_variables)
                 if bad_vars:
-                    raise Schema.BoundVariableError(str(bad_vars), formula.root)
+                    for a in bad_vars:
+                        raise Schema.BoundVariableError(a, formula.root)
                 return relations_instantiation_map[formula.root]
 
         # case of negation:
@@ -294,7 +295,8 @@ class Schema:
                 if fi.free_variables().intersection(bound_variables):
                     bad_vars = fi.free_variables().intersection(
                         bound_variables)
-                    raise Schema.BoundVariableError(str(bad_vars),formula.root)
+                    for a in bad_vars:
+                        raise Schema.BoundVariableError(a, formula.root)
 
                 new_arg = formula.arguments[0].substitute(constants_and_variables_instantiation_map, set())
                 return fi.substitute({'_': new_arg}, set())
@@ -431,7 +433,9 @@ class Schema:
                                         relation_map,
                                        set())
 
-        except:
+        except Schema.BoundVariableError:
+            return None
+        except ForbiddenVariableError:
             return None
 
 
