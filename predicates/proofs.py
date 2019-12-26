@@ -248,6 +248,10 @@ class Schema:
         # case of nullary invocation:
         if is_relation(formula.root) and formula.root in relations_instantiation_map.keys():
             if not len(formula.arguments):
+                bad_vars = relations_instantiation_map[formula.root].free_variables().intersection(
+                    bound_variables)
+                if bad_vars:
+                    raise Schema.BoundVariableError(str(bad_vars), formula.root)
                 return relations_instantiation_map[formula.root]
 
         # case of negation:
@@ -288,7 +292,9 @@ class Schema:
             if len(formula.arguments) is 1:
                 fi = relations_instantiation_map[formula.root]
                 if fi.free_variables().intersection(bound_variables):
-                    raise Schema.BoundVariableError
+                    bad_vars = fi.free_variables().intersection(
+                        bound_variables)
+                    raise Schema.BoundVariableError(str(bad_vars),formula.root)
 
                 new_arg = formula.arguments[0].substitute(constants_and_variables_instantiation_map, set())
                 return fi.substitute({'_': new_arg}, set())
@@ -406,6 +412,27 @@ class Schema:
                 assert is_relation(key)
                 assert isinstance(instantiation_map[key], Formula)
         # Task 9.4
+        try:
+            for key in instantiation_map.keys():
+                if key not in self.templates:
+                    return None
+
+            const_var_map = {}
+            relation_map = {}
+
+            for key in instantiation_map:
+                if is_variable(key):
+                    const_var_map[key] = Term(instantiation_map[key])
+                elif is_constant(key):
+                    const_var_map[key] = instantiation_map[key]
+                else:
+                    relation_map[key] = instantiation_map[key]
+            return Schema._instantiate_helper(self.formula, const_var_map,
+                                        relation_map,
+                                       set())
+
+        except:
+            return None
 
 
 @frozen
