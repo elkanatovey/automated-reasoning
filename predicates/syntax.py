@@ -831,6 +831,32 @@ class Formula:
             return Formula(self.root, self.variable, self.predicate.substitute(new_substitution_map, checker_set))
         return self
 
+    @staticmethod
+    def proposition_skeleton_helper(f: Formula, f2z:
+    Mapping[Formula, PropositionalFormula], z2f: Mapping[str, Formula]):
+
+        #case equality, relation, quantifier
+        if is_equality(f.root) or is_relation(f.root) or is_quantifier(f.root):
+            if f in f2z.keys():
+                return f2z[f]
+            else:
+                new_z = next(fresh_variable_name_generator)
+                f_as_proposition = PropositionalFormula(new_z)
+                z2f[new_z] = f
+                f2z[f] = f_as_proposition
+                return f_as_proposition
+
+        # deeper recursion cases
+        if is_unary(f.root) or is_binary(f.root):
+            new_first = Formula.proposition_skeleton_helper(f.first, f2z, z2f)
+
+            if is_binary(f.root):
+                new_second = Formula.proposition_skeleton_helper(f.second,
+                                                                 f2z, z2f)
+                return PropositionalFormula(f.root, new_first, new_second)
+
+            return PropositionalFormula(f.root, new_first)
+
     def propositional_skeleton(self) -> Tuple[PropositionalFormula,
                                               Mapping[str, Formula]]:
         """Computes a propositional skeleton of the current formula.
@@ -849,6 +875,10 @@ class Formula:
             substituted.
         """
         # Task 9.8
+        z2f = {}
+        return Formula.proposition_skeleton_helper(self, {}, z2f), z2f
+
+
 
     @staticmethod
     def from_propositional_skeleton(skeleton: PropositionalFormula,
