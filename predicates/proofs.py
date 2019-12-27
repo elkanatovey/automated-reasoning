@@ -542,6 +542,20 @@ class Proof:
             assert line_number < len(lines) and lines[line_number] is self
             # Task 9.5
 
+            instantiated = self.assumption.instantiate(self.instantiation_map)
+            if instantiated is None:
+                return False
+            elif instantiated != self.formula:
+                return False
+
+            for assumption in assumptions:
+                instantiated = assumption.instantiate(self.instantiation_map)
+                if instantiated is not None:
+                    if instantiated == self.formula:
+                        return True
+            return False
+
+
     @frozen
     class MPLine:
         """An immutable proof line justified by the Modus Ponens (MP) inference

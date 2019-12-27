@@ -48,11 +48,11 @@ def test_task11(debug=False):
 def test_task12(debug=False):
     test_prove_tautology(debug)
 
-test_task1(True)
-test_task2(True)
-test_task3(True)
-test_task4(True)
-# test_task5(True)
+# test_task1(True)
+# test_task2(True)
+# test_task3(True)
+# test_task4(True)
+test_task5(True)
 # test_task6(True)
 # test_task7(True)
 # test_task8(True)
