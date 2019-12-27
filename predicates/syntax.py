@@ -848,7 +848,7 @@ class Formula:
             propositional formula to the subformula for which it was
             substituted.
         """
-        # Task 9.6
+        # Task 9.8
 
     @staticmethod
     def from_propositional_skeleton(skeleton: PropositionalFormula,
