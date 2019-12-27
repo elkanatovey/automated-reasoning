@@ -832,7 +832,7 @@ class Formula:
         return self
 
     @staticmethod
-    def proposition_skeleton_helper(f: Formula, f2z:
+    def _proposition_skeleton_helper(f: Formula, f2z:
     Mapping[Formula, PropositionalFormula], z2f: Mapping[str, Formula]):
 
         #case equality, relation, quantifier
@@ -848,11 +848,11 @@ class Formula:
 
         # deeper recursion cases
         if is_unary(f.root) or is_binary(f.root):
-            new_first = Formula.proposition_skeleton_helper(f.first, f2z, z2f)
+            new_first = Formula._proposition_skeleton_helper(f.first, f2z, z2f)
 
             if is_binary(f.root):
-                new_second = Formula.proposition_skeleton_helper(f.second,
-                                                                 f2z, z2f)
+                new_second = Formula._proposition_skeleton_helper(f.second,
+                                                                  f2z, z2f)
                 return PropositionalFormula(f.root, new_first, new_second)
 
             return PropositionalFormula(f.root, new_first)
@@ -876,7 +876,7 @@ class Formula:
         """
         # Task 9.8
         z2f = {}
-        return Formula.proposition_skeleton_helper(self, {}, z2f), z2f
+        return Formula._proposition_skeleton_helper(self, {}, z2f), z2f
 
 
 
