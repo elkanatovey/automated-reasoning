@@ -877,6 +877,13 @@ def axiom_specialization_map_to_schema_instantiation_map(
         assert is_propositional_variable(key)
     # Task 9.11.1
 
+    schema_instantiation_map = dict()
+    for var in propositional_specialization_map:
+        schema_instantiation_map[var.upper()] = \
+            Formula.from_propositional_skeleton(
+            propositional_specialization_map[var], substitution_map)
+    return schema_instantiation_map
+
 
 def prove_from_skeleton_proof(formula: Formula,
                               skeleton_proof: PropositionalProof,

@@ -58,6 +58,6 @@ def test_task12(debug=False):
 # test_task8(True)
 # test_task9(True)
 # test_combined(True)
-test_task10(True)
-# test_task11(True)
+# test_task10(True)
+test_task11(True)
 # test_task12(True)
