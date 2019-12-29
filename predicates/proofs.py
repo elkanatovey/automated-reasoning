@@ -976,3 +976,9 @@ def prove_tautology(tautology: Formula) -> Proof:
     """
     assert is_propositional_tautology(tautology.propositional_skeleton()[0])
     # Task 9.12
+
+    propositional_tautology, mapping = tautology.propositional_skeleton()
+
+    propositional_tautology_proof = prove_propositional_tautology(propositional_tautology, {})
+
+    return prove_from_skeleton_proof(tautology, propositional_tautology_proof, mapping)
