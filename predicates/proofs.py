@@ -241,14 +241,18 @@ class Schema:
         # Task 9.3
 
         # case of non template relation or an equality
-        if (is_relation(formula.root) and formula.root not in relations_instantiation_map.keys()) or \
+        if (is_relation(
+                formula.root) and formula.root not in relations_instantiation_map.keys()) or \
                 is_equality(formula.root):
-            return formula.substitute(constants_and_variables_instantiation_map, set())
+            return formula.substitute(
+                constants_and_variables_instantiation_map, set())
 
         # case of nullary invocation:
-        if is_relation(formula.root) and formula.root in relations_instantiation_map.keys():
+        if is_relation(
+                formula.root) and formula.root in relations_instantiation_map.keys():
             if not len(formula.arguments):
-                bad_vars = relations_instantiation_map[formula.root].free_variables().intersection(
+                bad_vars = relations_instantiation_map[
+                    formula.root].free_variables().intersection(
                     bound_variables)
                 if bad_vars:
                     for a in bad_vars:
@@ -257,21 +261,28 @@ class Schema:
 
         # case of negation:
         if is_unary(formula.root):
-            return Formula(formula.root, Schema._instantiate_helper(formula.first,
-                                                                    constants_and_variables_instantiation_map,
-                                                                    relations_instantiation_map, bound_variables))
+            return Formula(formula.root,
+                           Schema._instantiate_helper(formula.first,
+                                                      constants_and_variables_instantiation_map,
+                                                      relations_instantiation_map,
+                                                      bound_variables))
 
         if is_binary(formula.root):
-            return Formula(formula.root, Schema._instantiate_helper(formula.first,
-                                                                    constants_and_variables_instantiation_map,
-                                                                    relations_instantiation_map, bound_variables),
-                           Schema._instantiate_helper(formula.second, constants_and_variables_instantiation_map,
-                                                      relations_instantiation_map, bound_variables))
+            return Formula(formula.root,
+                           Schema._instantiate_helper(formula.first,
+                                                      constants_and_variables_instantiation_map,
+                                                      relations_instantiation_map,
+                                                      bound_variables),
+                           Schema._instantiate_helper(formula.second,
+                                                      constants_and_variables_instantiation_map,
+                                                      relations_instantiation_map,
+                                                      bound_variables))
 
         # case of quantification:
         if is_quantifier(formula.root):
             if formula.variable in constants_and_variables_instantiation_map.keys():
-                new_var = constants_and_variables_instantiation_map[formula.variable]
+                new_var = constants_and_variables_instantiation_map[
+                    formula.variable]
                 new_bound_vars = set(bound_variables) | set(str(new_var))
                 return Formula(formula.root, str(new_var),
                                Schema._instantiate_helper(formula.predicate,
@@ -289,7 +300,8 @@ class Schema:
                                                           new_bound_vars))
 
         # unary invocation of parametrized template relation:
-        if is_relation(formula.root) and formula.root in relations_instantiation_map.keys():
+        if is_relation(
+                formula.root) and formula.root in relations_instantiation_map.keys():
             if len(formula.arguments) is 1:
                 fi = relations_instantiation_map[formula.root]
                 if fi.free_variables().intersection(bound_variables):
@@ -298,7 +310,8 @@ class Schema:
                     for a in bad_vars:
                         raise Schema.BoundVariableError(a, formula.root)
 
-                new_arg = formula.arguments[0].substitute(constants_and_variables_instantiation_map, set())
+                new_arg = formula.arguments[0].substitute(
+                    constants_and_variables_instantiation_map, set())
                 return fi.substitute({'_': new_arg}, set())
 
     def instantiate(self, instantiation_map: InstantiationMap) -> \
@@ -430,8 +443,8 @@ class Schema:
                 else:
                     relation_map[key] = instantiation_map[key]
             return Schema._instantiate_helper(self.formula, const_var_map,
-                                        relation_map,
-                                       set())
+                                              relation_map,
+                                              set())
 
         except Schema.BoundVariableError:
             return None
@@ -554,7 +567,6 @@ class Proof:
                     if instantiated == self.formula:
                         return True
             return False
-
 
     @frozen
     class MPLine:
@@ -699,7 +711,8 @@ class Proof:
             if self.formula.root != 'A':
                 return False
 
-            if lines[self.predicate_line_number].formula != self.formula.predicate:
+            if lines[
+                self.predicate_line_number].formula != self.formula.predicate:
                 return False
 
             return True
@@ -750,7 +763,6 @@ class Proof:
             formula_skeleton, junk = self.formula.propositional_skeleton()
 
             return is_propositional_tautology(formula_skeleton)
-
 
     #: An immutable proof line.
     Line = Union[AssumptionLine, MPLine, UGLine, TautologyLine]
@@ -881,7 +893,7 @@ def axiom_specialization_map_to_schema_instantiation_map(
     for var in propositional_specialization_map:
         schema_instantiation_map[var.upper()] = \
             Formula.from_propositional_skeleton(
-            propositional_specialization_map[var], substitution_map)
+                propositional_specialization_map[var], substitution_map)
     return schema_instantiation_map
 
 
@@ -912,6 +924,43 @@ def prove_from_skeleton_proof(formula: Formula,
     assert Formula.from_propositional_skeleton(
         skeleton_proof.statement.conclusion, substitution_map) == formula
     # Task 9.11.2
+
+    assumptions = PROPOSITIONAL_AXIOMATIC_SYSTEM_SCHEMAS
+    lines = []
+
+    for line in skeleton_proof.lines:
+        if line.rule is not MP:
+
+            # map 0 order line to infrule
+            zero_order_spec_map = \
+                PropositionalInferenceRule.formula_specialization_map(
+                    line.rule.conclusion, line.formula)
+
+            # maps line to schema rule it instantiates
+            assumptions_instantiation_map = \
+                axiom_specialization_map_to_schema_instantiation_map(
+                    zero_order_spec_map, substitution_map)
+
+            # line as first order
+            line_formula = Formula.from_propositional_skeleton(line.formula,
+                                                               substitution_map)
+
+            assumption_schema = PROPOSITIONAL_AXIOM_TO_SCHEMA[line.rule]
+
+            new_line = Proof.AssumptionLine(line_formula, assumption_schema,
+                                            assumptions_instantiation_map)
+            lines.append(new_line)
+
+        # case MPline
+        else:
+            line_formula = Formula.from_propositional_skeleton(line.formula,
+                                                               substitution_map)
+
+            new_line = Proof.MPLine(line_formula, line.assumptions[0],
+                                    line.assumptions[1])
+            lines.append(new_line)
+
+    return Proof(assumptions, formula, lines)
 
 
 def prove_tautology(tautology: Formula) -> Proof:
