@@ -4,12 +4,13 @@
 # File name: predicates/prover.py
 
 from typing import AbstractSet, Collection, FrozenSet, List, Mapping, \
-                   Sequence, Tuple, Union
+    Sequence, Tuple, Union
 
 from logic_utils import fresh_variable_name_generator
 
 from predicates.syntax import *
 from predicates.proofs import *
+
 
 class Prover:
     """A class for gradually creating a first-order logic proof from given
@@ -49,7 +50,7 @@ class Prover:
     AXIOMS = frozenset({UI, EI, US, ES, RX, ME})
 
     def __init__(self, assumptions: Collection[Union[Schema, Formula, str]],
-                 print_as_proof_forms: bool=False) -> None:
+                 print_as_proof_forms: bool = False) -> None:
         """Initializes a `Prover` from its assumptions/additional axioms. The
         proof created by the prover initially has no lines.
 
@@ -65,7 +66,7 @@ class Prover:
             Prover.AXIOMS.union(
                 {assumption if isinstance(assumption, Schema)
                  else Schema(assumption) if isinstance(assumption, Formula)
-                 else Schema(Formula.parse(assumption))
+                else Schema(Formula.parse(assumption))
                  for assumption in assumptions})
         self._lines = []
         self._print_as_proof_forms = print_as_proof_forms
@@ -73,7 +74,7 @@ class Prover:
             print('Proving from assumptions/axioms:\n'
                   '  AXIOMS')
             for assumption in self._assumptions - Prover.AXIOMS:
-                  print('  ' + str(assumption))
+                print('  ' + str(assumption))
             print('Lines:')
 
     def qed(self) -> Proof:
@@ -149,7 +150,7 @@ class Prover:
                     assert isinstance(value, Formula)
         return self._add_line(Proof.AssumptionLine(instance, assumption,
                                                    instantiation_map))
-        
+
     def add_assumption(self, unique_instance: Union[Formula, str]) -> int:
         """Appends to the proof being created by the current prover a line that
         validly justifies the unique instance of one of the assumptions/axioms
@@ -263,7 +264,7 @@ class Prover:
                             line.predicate_line_number + line_shift)
         line_number = len(self._lines) - 1
         assert self._lines[line_number].formula == conclusion
-        return line_number                
+        return line_number
 
     def add_universal_instantiation(self, instantiation: Union[Formula, str],
                                     line_number: int, term: Union[Term, str]) \
@@ -303,6 +304,18 @@ class Prover:
                quantified.predicate.substitute({quantified.variable: term})
         # Task 10.1
 
+        quantified_template = quantified.predicate.substitute({
+            quantified.variable: Term('_')}, set())
+
+        step2 = self.add_instantiated_assumption(Formula('->', quantified,
+                                                         instantiation),
+                                                 Prover.UI,
+                                                 {'R':
+                                                      quantified_template,
+                                                     'c': term,
+                                                  'x': quantified.variable})
+        return self.add_mp(instantiation, line_number, step2)
+
     def add_tautological_implication(self, implication: Union[Formula, str],
                                      line_numbers: AbstractSet[int]) -> int:
         """Appends to the proof being created by the current prover a sequence
@@ -327,7 +340,8 @@ class Prover:
         # Task 10.2
 
     def add_existential_derivation(self, consequent: Union[Formula, str],
-                                   line_number1: int, line_number2: int) -> int:
+                                   line_number1: int,
+                                   line_number2: int) -> int:
         """Appends to the proof being created by the current prover a sequence
         of validly justified lines, the last of which validly justifies the
         given formula, which is the consequent of the second specified already
@@ -475,9 +489,9 @@ class Prover:
             parametrized_term = Term.parse(parametrized_term)
         assert substituted == \
                Formula('=', [parametrized_term.substitute(
-                                 {'_': equality.arguments[0]}),
-                             parametrized_term.substitute(
-                                 {'_': equality.arguments[1]})])
+                   {'_': equality.arguments[0]}),
+                   parametrized_term.substitute(
+                       {'_': equality.arguments[1]})])
         # Task 10.8
 
     def _add_chaining_of_two_equalities(self, line_number1: int,
