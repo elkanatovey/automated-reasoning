@@ -339,6 +339,25 @@ class Prover:
             assert line_number < len(self._lines)
         # Task 10.2
 
+        tautology_line = implication
+        line_numbers = list(line_numbers)
+
+        # build tautological inference
+        for assumption_line in line_numbers:
+            tautology_line = Formula(
+                '->', self._lines[assumption_line].formula, tautology_line)
+
+        current_step = self.add_tautology(tautology_line)
+
+        # break up with mp
+        for assumption_line in reversed(line_numbers):
+            tautology_line = tautology_line.second
+            current_step = self.add_mp(tautology_line, assumption_line,
+                                       current_step)
+
+        return current_step
+
+
     def add_existential_derivation(self, consequent: Union[Formula, str],
                                    line_number1: int,
                                    line_number2: int) -> int:
