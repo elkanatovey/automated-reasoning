@@ -218,14 +218,14 @@ def lovers_proof(print_as_proof_forms: bool = False) -> Proof:
                      'Ax[Az[Ay[(Loves(x,y)->Loves(z,x))]]]'},
                     print_as_proof_forms)
     # Task 10.4
-    first_assump = prover.add_assumption('Ax[Ey[Loves(x,y)]]')
-    second_assump = prover.add_assumption('Ax[Az[Ay[(Loves(x,y)->Loves(z,x))]]]')
-    step_1 = prover.add_universal_instantiation('[Ey[Loves(x,y)]', first_assump, 'x')
-    step_2 = prover.add_universal_instantiation('Az[Ay[(Loves(x,y)->Loves(z,x))]]', second_assump, 'x')
-    step_3 = prover.add_universal_instantiation('Ay[(Loves(x,y)->Loves(z,x))]', step_2, 'x')
-    step_4 = prover.add_existential_derivation('Loves(z,x)', )
-
-
+    step1 = prover.add_assumption('Ax[Ey[Loves(x,y)]]')
+    step2 = prover.add_assumption('Ax[Az[Ay[(Loves(x,y)->Loves(z,x))]]]')
+    step3 = prover.add_universal_instantiation('[Ey[Loves(x,y)]', step1, 'x')
+    step4 = prover.add_universal_instantiation('Az[Ay[(Loves(x,y)->Loves(z,x))]]', step2, 'x')
+    step5 = prover.add_universal_instantiation('Ay[(Loves(x,y)->Loves(z,x))]', step4, 'x')
+    step6 = prover.add_existential_derivation('Loves(z,x)', step5, step3)
+    step7 = prover.add_ug('Az[Loves(z,x)]', step6)
+    step8 = prover.add_ug('Ax[Az[Loves(z,x)]]', step7)
     return prover.qed()
 
 def homework_proof(print_as_proof_forms: bool = False) -> Proof:
