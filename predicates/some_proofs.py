@@ -220,10 +220,10 @@ def lovers_proof(print_as_proof_forms: bool = False) -> Proof:
     # Task 10.4
     step1 = prover.add_assumption('Ax[Ey[Loves(x,y)]]')
     step2 = prover.add_assumption('Ax[Az[Ay[(Loves(x,y)->Loves(z,x))]]]')
-    step3 = prover.add_universal_instantiation('[Ey[Loves(x,y)]', step1, 'x')
+    step3 = prover.add_universal_instantiation('Ey[Loves(x,y)]', step1, 'x')
     step4 = prover.add_universal_instantiation('Az[Ay[(Loves(x,y)->Loves(z,x))]]', step2, 'x')
-    step5 = prover.add_universal_instantiation('Ay[(Loves(x,y)->Loves(z,x))]', step4, 'x')
-    step6 = prover.add_existential_derivation('Loves(z,x)', step5, step3)
+    step5 = prover.add_universal_instantiation('Ay[(Loves(x,y)->Loves(z,x))]', step4, 'z')
+    step6 = prover.add_existential_derivation('Loves(z,x)', step3, step5)
     step7 = prover.add_ug('Az[Loves(z,x)]', step6)
     step8 = prover.add_ug('Ax[Az[Loves(z,x)]]', step7)
     return prover.qed()
