@@ -394,14 +394,12 @@ class Prover:
         # Task 10.3
         step6_formula =Formula('A', quantified.variable, conditional)
         step6 = self.add_ug(step6_formula, line_number2)
-##((Ax[(Man(x)->Ex[Mortal(x)])]&Ex[Man(x)])->Ex[Mortal(x)])
 
         es_instantiated = Formula('->', Formula('&', step6_formula, quantified), consequent)
 
         conditional_template = conditional.first.substitute({
             quantified.variable: Term('_')}, set())
 
-        # @todo step 7 still under construction
         step7 = self.add_instantiated_assumption(es_instantiated, self.ES,
                                                  {'Q': consequent, 'R': conditional_template, 'x': quantified.variable})
         return self.add_tautological_implication(consequent, {line_number1,
