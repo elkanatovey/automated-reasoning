@@ -218,6 +218,14 @@ def lovers_proof(print_as_proof_forms: bool = False) -> Proof:
                      'Ax[Az[Ay[(Loves(x,y)->Loves(z,x))]]]'},
                     print_as_proof_forms)
     # Task 10.4
+    first_assump = prover.add_assumption('Ax[Ey[Loves(x,y)]]')
+    second_assump = prover.add_assumption('Ax[Az[Ay[(Loves(x,y)->Loves(z,x))]]]')
+    step_1 = prover.add_universal_instantiation('[Ey[Loves(x,y)]', first_assump, 'x')
+    step_2 = prover.add_universal_instantiation('Az[Ay[(Loves(x,y)->Loves(z,x))]]', second_assump, 'x')
+    step_3 = prover.add_universal_instantiation('Ay[(Loves(x,y)->Loves(z,x))]', step_2, 'x')
+    step_4 = prover.add_existential_derivation('Loves(z,x)', )
+
+
     return prover.qed()
 
 def homework_proof(print_as_proof_forms: bool = False) -> Proof:
