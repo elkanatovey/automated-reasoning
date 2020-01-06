@@ -432,6 +432,18 @@ class Prover:
                                          flipped.arguments[0]])
         # Task 10.6
 
+        step1f = Formula('->', equality, Formula('->', Formula('=', [flipped.arguments[1], flipped.arguments[1]]), flipped))
+
+        parametrized_f = Formula('=', [Term('_'), equality.arguments[0]])
+        inst =   {'R': parametrized_f,'c': equality.arguments[0], 'd': equality.arguments[1]}
+        step1 = self.add_instantiated_assumption(step1f, Prover.ME, inst)
+
+        step2 = self.add_mp(step1f.second, line_number, step1)
+
+        step3 = self.add_instantiated_assumption(step1f.second.first, Prover.RX, {'c': step1f.second.first.arguments[0]})
+
+        return self.add_mp(step1f.second.second, step3, step2)
+
     def add_free_instantiation(self, instantiation: Union[Formula, str],
                                line_number: int,
                                substitution_map:
