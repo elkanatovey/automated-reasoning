@@ -575,7 +575,7 @@ class Prover:
         step2 = self.add_mp(step1f.second, line_number, step1)
 
         step3 = self.add_instantiated_assumption(step1f.second.first, Prover.RX,
-                                             {'c': step1f.second.first.arguments[0]})
+                                                 {'c': step1f.second.first.arguments[0]})
 
         return self.add_mp(step1f.second.second, step3, step2)
 
@@ -614,6 +614,33 @@ class Prover:
         assert is_equality(equality2.root)
         assert equality1.arguments[1] == equality2.arguments[0]
         # Task 10.9.1
+
+        x_eq_y = equality1
+        y_eq_z = equality2
+
+        x = x_eq_y.arguments[0]
+        y = y_eq_z.arguments[0]
+        z = y_eq_z.arguments[1]
+
+        x_eq_z = Formula('=', [x, z])
+        param_eq_z = Formula('=', [Term('_'), z])
+
+        y_eq_x = Formula('=', [y, x])
+
+        # so ME holds
+        step0 = self.add_flipped_equality(y_eq_x, line_number1)
+
+        # build formula for ME
+        step1f = Formula('->', y_eq_x, Formula('->', y_eq_z, x_eq_z))
+        R = param_eq_z
+        inst = {'R': R, 'c': y, 'd': x}
+        step1 = self.add_instantiated_assumption(step1f, Prover.ME, inst)
+
+        step2 = self.add_mp(step1f.second, step0, step1)
+
+        return self.add_mp(step1f.second.second, line_number2, step2)
+
+
 
     def add_chained_equality(self, chained: Union[Formula, str],
                              line_numbers: Sequence[int]) -> int:
@@ -659,3 +686,8 @@ class Prover:
             current_term = equality.arguments[1]
         assert chained.arguments[1] == current_term
         # Task 10.9.2
+
+        current_line = line_numbers[0]
+        for line in line_numbers[1:]:
+            current_line = self._add_chaining_of_two_equalities(current_line, line)
+        return current_line
