@@ -496,6 +496,28 @@ class Prover:
                self._lines[line_number].formula.substitute(substitution_map)
         # Task 10.7
 
+        new_sub_map = dict()
+        cur_line = line_number
+        cur_formula = self._lines[line_number].formula
+
+        for key in substitution_map:
+            # save z's
+            cur_z = next(fresh_variable_name_generator)
+            new_sub_map[cur_z] = substitution_map[key]
+
+            # add temp formulas
+            cur_line = self.add_ug(Formula('A', key, cur_formula), cur_line)
+            cur_formula = cur_formula.substitute({key: Term(cur_z)}, set())
+            cur_line = self.add_universal_instantiation(cur_formula, cur_line, cur_z)
+
+        for key in new_sub_map:
+            cur_line = self.add_ug(Formula('A', key, cur_formula), cur_line)
+            cur_formula = cur_formula.substitute({key: new_sub_map[key]}, set())
+            cur_line = self.add_universal_instantiation(cur_formula, cur_line, new_sub_map[key])
+
+        return cur_line
+
+
     def add_substituted_equality(self, substituted: Union[Formula, str],
                                  line_number: int,
                                  parametrized_term: Union[Term, str]) -> \

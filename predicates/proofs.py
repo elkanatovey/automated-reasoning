@@ -283,7 +283,9 @@ class Schema:
             if formula.variable in constants_and_variables_instantiation_map.keys():
                 new_var = constants_and_variables_instantiation_map[
                     formula.variable]
-                new_bound_vars = set(bound_variables) | set(str(new_var))
+                new_bound_vars = set()
+                new_bound_vars.add(str(new_var))
+                new_bound_vars = set(bound_variables) | new_bound_vars
                 return Formula(formula.root, str(new_var),
                                Schema._instantiate_helper(formula.predicate,
                                                           constants_and_variables_instantiation_map,
