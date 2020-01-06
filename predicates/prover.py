@@ -437,7 +437,7 @@ class Prover:
                                                                      flipped.arguments[1]]), flipped))
 
         parametrized_f = Formula('=', [Term('_'), equality.arguments[0]])
-        inst =   {'R': parametrized_f,'c': equality.arguments[0], 'd': equality.arguments[1]}
+        inst = {'R': parametrized_f,'c': equality.arguments[0], 'd': equality.arguments[1]}
         step1 = self.add_instantiated_assumption(step1f, Prover.ME, inst)
 
         step2 = self.add_mp(step1f.second, line_number, step1)
@@ -561,6 +561,27 @@ class Prover:
                    parametrized_term.substitute(
                        {'_': equality.arguments[1]})])
         # Task 10.8
+
+        # paramater on x
+        px = parametrized_term.substitute({'_': equality.arguments[0]})
+        px_eq_px = Formula('=', [px, px])
+
+        # build formula for ME
+        step1f = Formula('->', equality, Formula('->', px_eq_px, substituted))
+        R = Formula('=', [px, parametrized_term])
+
+        inst = {'R': R, 'c': equality.arguments[0], 'd': equality.arguments[1]}
+        step1 = self.add_instantiated_assumption(step1f, Prover.ME, inst)
+        step2 = self.add_mp(step1f.second, line_number, step1)
+
+        step3 = self.add_instantiated_assumption(step1f.second.first, Prover.RX,
+                                             {'c': step1f.second.first.arguments[0]})
+
+        return self.add_mp(step1f.second.second, step3, step2)
+
+
+
+
 
     def _add_chaining_of_two_equalities(self, line_number1: int,
                                         line_number2: int) -> int:
