@@ -579,10 +579,6 @@ class Prover:
 
         return self.add_mp(step1f.second.second, step3, step2)
 
-
-
-
-
     def _add_chaining_of_two_equalities(self, line_number1: int,
                                         line_number2: int) -> int:
         """Appends to the proof being created by the current prover a sequence
@@ -639,8 +635,6 @@ class Prover:
         step2 = self.add_mp(step1f.second, step0, step1)
 
         return self.add_mp(step1f.second.second, line_number2, step2)
-
-
 
     def add_chained_equality(self, chained: Union[Formula, str],
                              line_numbers: Sequence[int]) -> int:
