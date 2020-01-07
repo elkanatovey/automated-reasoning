@@ -429,6 +429,16 @@ def multiply_zero_proof(print_as_proof_forms: bool = False) -> Proof:
     """
     prover = Prover(FIELD_AXIOMS, print_as_proof_forms)
     # Task 10.11
+    zero = prover.add_assumption('plus(0,x)=x')
+    negation = prover.add_assumption('plus(minus(x),x)=0')
+    add_associativity = prover.add_assumption('plus(plus(x,y),z)=plus(x,plus(y,z))')
+    add_commutativity = prover.add_assumption('plus(x,y)=plus(y,x)')
+    mult_commutativity = prover.add_assumption('times(x,y)=times(y,x)')
+    mult_identity = prover.add_assumption('times(x,1)=x')
+    mult_inverse = prover.add_assumption('(~x=0->Ey[times(y,x)=1])')
+    mult_distributivity = prover.add_assumption('times(x,plus(y,z))=plus(times(x,y),times(x,z))')
+    mult_associativity = prover.add_assumption('times(times(x,y),z)=times(x,times(y,z))')
+
     return prover.qed()
 
 #: The induction axiom
