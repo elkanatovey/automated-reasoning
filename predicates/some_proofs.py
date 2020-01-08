@@ -480,10 +480,11 @@ def multiply_zero_proof(print_as_proof_forms: bool = False) -> Proof:
     step17 = prover.add_substituted_equality('plus(plus(minus(x),x),times(x,0))=plus(0,times(x,0))', step1,
                                              'plus(_,times(x,0))')
     step18 = prover.add_free_instantiation('plus(0,times(x,0))=times(x,0)', zero, {'x': 'times(x,0)'})
-    step19 = prover.add_chained_equality('0=times(x,0)', [step2, step5, step9, step11, step12, step14, step16,
-                                                          step17, step18])
+    step19 = prover.add_free_instantiation('times(x,0)=times(0,x)', mult_commutativity, {'y': '0'})
+    step20 = prover.add_chained_equality('0=times(0,x)', [step2, step5, step9, step11, step12, step14, step16,
+                                                          step17, step18, step19])
 
-    step20 = prover.add_flipped_equality('times(x,0)=0', step19)
+    step21 = prover.add_flipped_equality('times(0,x)=0', step20)
 
     return prover.qed()
 
