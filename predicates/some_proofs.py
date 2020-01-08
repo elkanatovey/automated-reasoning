@@ -513,6 +513,8 @@ def peano_zero_proof(print_as_proof_forms: bool = False) -> Proof:
     """
     prover = Prover(PEANO_AXIOMS, print_as_proof_forms)
     # Task 10.12
+    induction_axiom = prover.add_instantiated_assumption('((plus(0,0)=0&Ax[(plus(0,x)=x->plus(0,s(x))=s(x))])->Ax[plus(0,x)=x])',
+                                            INDUCTION_AXIOM, {'R': Formula.parse('plus(0,_)=_')})
     return prover.qed()
 
 
