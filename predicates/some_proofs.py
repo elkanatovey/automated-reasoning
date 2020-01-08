@@ -467,6 +467,23 @@ def multiply_zero_proof(print_as_proof_forms: bool = False) -> Proof:
     step11 = prover.add_substituted_equality('plus(minus(x),times(x,plus(0,1)))=plus(minus(x),plus(times(x,0),'
                                              'times(x,1)))'
                                              , step10, 'plus(minus(x),_)')
+    step12 = prover.add_substituted_equality('plus(minus(x),plus(times(x,0),times(x,1)))='
+                                             'plus(minus(x),plus(times(x,0),x))',
+                                             step3, 'plus(minus(x),plus(times(x,0),_))')
+    step13 = prover.add_free_instantiation('plus(times(x,0),x)=plus(x,times(x,0))',
+                                           add_commutativity, {'x': 'times(x,0)', 'y': 'x'})
+    step14 = prover.add_substituted_equality('plus(minus(x),plus(times(x,0),x))=plus(minus(x),plus(x,times(x,0)))',
+                                           step13, 'plus(minus(x),_)')
+    step15 = prover.add_free_instantiation('plus(plus(minus(x),x),times(x,0))=plus(minus(x),plus(x,times(x,0)))',
+                                           add_associativity, {'x': 'minus(x)', 'y': 'x', 'z': 'times(x,0)'})
+    step16 = prover.add_flipped_equality('plus(minus(x),plus(x,times(x,0)))=plus(plus(minus(x),x),times(x,0))', step15)
+    step17 = prover.add_substituted_equality('plus(plus(minus(x),x),times(x,0))=plus(0,times(x,0))', step1,
+                                             'plus(_,times(x,0))')
+    step18 = prover.add_free_instantiation('plus(0,times(x,0))=times(x,0)', zero, {'x': 'times(x,0)'})
+    step19 = prover.add_chained_equality('0=times(x,0)', [step2, step5, step9, step11, step12, step14, step16,
+                                                          step17, step18])
+
+    step20 = prover.add_flipped_equality('times(x,0)=0', step19)
 
     return prover.qed()
 
