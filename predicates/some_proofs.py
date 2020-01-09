@@ -513,8 +513,31 @@ def peano_zero_proof(print_as_proof_forms: bool = False) -> Proof:
     """
     prover = Prover(PEANO_AXIOMS, print_as_proof_forms)
     # Task 10.12
-    induction_axiom = prover.add_instantiated_assumption('((plus(0,0)=0&Ax[(plus(0,x)=x->plus(0,s(x))=s(x))])->Ax[plus(0,x)=x])',
-                                            INDUCTION_AXIOM, {'R': Formula.parse('plus(0,_)=_')})
+    induction_axiom = prover.add_instantiated_assumption('((plus(0,0)=0&Ax[(plus(0,x)=x->plus(0,s(x))=s(x))])->'
+                                                         'Ax[plus(0,x)=x])', INDUCTION_AXIOM,
+                                                         {'R': Formula.parse('plus(0,_)=_')})
+    zero = prover.add_assumption('plus(x,0)=x')
+    peano_commutativity = prover.add_assumption('plus(x,s(y))=s(plus(x,y))')
+
+    step1 = prover.add_free_instantiation('plus(0,0)=0', zero, {'x': '0'})
+    step2 = prover.add_instantiated_assumption('(plus(0,x)=x->(s(plus(0,x))=s(plus(0,x))->s(plus(0,x))=s(x)))',
+                                               prover.ME,
+                                               {'R': 's(plus(0,x))=s(_)', 'c': 'plus(0,x)', 'd': 'x'})
+    step3 = prover.add_instantiated_assumption('s(plus(0,x))=s(plus(0,x))', prover.RX, {'c': 's(plus(0,x))'})
+    step4 = prover.add_tautological_implication('(plus(0,x)=x->s(plus(0,x))=s(x))', {step2, step3})
+    step5 = prover.add_free_instantiation('plus(0,s(x))=s(plus(0,x))', peano_commutativity, {'x': '0', 'y': 'x'})
+    step6 = prover.add_flipped_equality('s(plus(0,x))=plus(0,s(x))', step5)
+    step7 = prover.add_instantiated_assumption('(s(plus(0,x))=plus(0,s(x))->((plus(0,x)=x->s(plus(0,x))='
+                                               's(x))->(plus(0,x)=x->plus(0,s(x))=s(x))))', prover.ME,
+                                               {'R': '(plus(0,x)=x->_=s(x))', 'c': 's(plus(0,x))', 'd': 'plus(0,'
+                                                                                                            's(x))'})
+    step8 = prover.add_mp('((plus(0,x)=x->s(plus(0,x))=s(x))->(plus(0,x)=x->plus(0,s(x))=s(x)))', step6, step7)
+    step9 = prover.add_mp('(plus(0,x)=x->plus(0,s(x))=s(x))', step4, step8)
+    step10 = prover.add_ug('Ax[(plus(0,x)=x->plus(0,s(x))=s(x))]', step9)
+    step11 = prover.add_tautological_implication('(plus(0,0)=0&Ax[(plus(0,x)=x->plus(0,s(x))=s(x))])', {step1, step10})
+    step12 = prover.add_mp('Ax[plus(0,x)=x]', step11, induction_axiom)
+    step13 = prover.add_universal_instantiation('plus(0,x)=x', step12, 'x')
+
     return prover.qed()
 
 
