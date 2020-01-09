@@ -13,7 +13,7 @@ from propositions.syntax import *
 from propositions.proofs import *
 from propositions.deduction import *
 from propositions.semantics import *
-from propositions.operators import *
+# from propositions.operators import *
 from propositions.axiomatic_systems import *
 
 def formula_comparer(f)-> str:
