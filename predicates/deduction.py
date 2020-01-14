@@ -144,3 +144,18 @@ def proof_by_way_of_contradiction(proof: Proof, assumption: Formula,
         if isinstance(line, Proof.UGLine):
             assert line.formula.variable not in assumption.free_variables()
     # Task 11.2
+    new_proof = remove_assumption(proof, assumption)
+    contradiction = proof.conclusion
+    tautology = Formula('~', contradiction)
+    fi_implies_contra = new_proof.conclusion
+    not_fi = Formula('~', assumption)
+    tautology_implies_not_fi = Formula('->', tautology, not_fi)
+
+    prover = Prover(new_proof.assumptions, print_as_proof_forms)
+
+    step0 = prover.add_proof(fi_implies_contra, new_proof)
+    step1 = prover.add_tautology(tautology)
+    step2 = prover.add_tautological_implication(tautology_implies_not_fi, {step0})
+    step3 = prover.add_mp(not_fi, step1, step2)
+
+    return prover.qed()
