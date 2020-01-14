@@ -85,6 +85,11 @@ def is_in_prenex_normal_form(formula: Formula) -> bool:
     """
     # Task 11.3.2
 
+    if is_quantifier(formula.root):
+        return is_in_prenex_normal_form(formula.predicate)
+
+    return is_quantifier_free(formula)
+
 def equivalence_of(formula1: Formula, formula2: Formula) -> Formula:
     """States the equivalence of the two given formulas as a formula.
 
