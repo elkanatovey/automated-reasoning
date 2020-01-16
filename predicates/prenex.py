@@ -278,35 +278,39 @@ def pull_out_quantifications_across_negation(formula: Formula) -> \
 
     not_formula = formula.first
     R = not_formula.predicate
+    not_r = Formula('~', R)
     R_sub = not_formula.predicate.substitute({not_formula.variable: Term('_')})
+    not_r_sub = Formula('~', R_sub)
     x = not_formula.variable
 
 
     # if root is 'E'
     if not_formula.root is 'E':
-        switched_f = Formula('A', x, Formula('~', R))
+        internal_formula, to_inline = pull_out_quantifications_across_negation(not_r)
+        switched_f = Formula('A', x, internal_formula)
         proof_line = ADDITIONAL_QUANTIFICATION_AXIOMS[1].instantiate({'R': R_sub, 'x': x})
         step0 = prover.add_instantiated_assumption(proof_line, ADDITIONAL_QUANTIFICATION_AXIOMS[1], {'R': R_sub, 'x': x})
-        internal_formula, to_inline = pull_out_quantifications_across_negation(switched_f.predicate)
+
         Q_sub = internal_formula.substitute({not_formula.variable: Term('_')})
-        conditional = ADDITIONAL_QUANTIFICATION_AXIOMS[14].instantiate({'R': R_sub, 'Q': Q_sub,
-                                                                        'y': not_formula.variable, 'x': x})
-        step1 = prover.add_instantiated_assumption(conditional, ADDITIONAL_QUANTIFICATION_AXIOMS[14], {'R': R_sub,
-                                                                'Q': Q_sub, 'y': not_formula.variable, 'x': x})
+        conditional = ADDITIONAL_QUANTIFICATION_AXIOMS[14].instantiate({'R': not_r_sub, 'Q': Q_sub,
+                                                                        'y': x, 'x': x})
+        step1 = prover.add_instantiated_assumption(conditional, ADDITIONAL_QUANTIFICATION_AXIOMS[14], {'R': not_r_sub,
+                                                                'Q': Q_sub, 'y': x, 'x': x})
 
     # if root is 'A'
     else:
-        switched_f = Formula('E', x, Formula('~', R))
+        internal_formula, to_inline = pull_out_quantifications_across_negation(not_r)
+        switched_f = Formula('E', x, internal_formula)
         proof_line = ADDITIONAL_QUANTIFICATION_AXIOMS[0].instantiate({'R': R_sub, 'x': x})
         step0 = prover.add_instantiated_assumption(proof_line, ADDITIONAL_QUANTIFICATION_AXIOMS[0], {'R': R_sub, 'x': x})
-        internal_formula, to_inline = pull_out_quantifications_across_negation(switched_f.predicate)
-        Q_sub = internal_formula.substitute({not_formula.variable: Term('_')})
-        conditional = ADDITIONAL_QUANTIFICATION_AXIOMS[15].instantiate({'R': R_sub, 'Q': Q_sub,
-                                                          'y': not_formula.variable, 'x': x})
-        step1 = prover.add_instantiated_assumption(conditional, ADDITIONAL_QUANTIFICATION_AXIOMS[15], {'R': R_sub,
-                                                                'Q': Q_sub, 'y': not_formula.variable, 'x': x})
 
-    final_formula = Formula(switched_f.root, switched_f.variable, internal_formula)
+        Q_sub = internal_formula.substitute({not_formula.variable: Term('_')})
+        conditional = ADDITIONAL_QUANTIFICATION_AXIOMS[15].instantiate({'R': not_r_sub, 'Q': Q_sub,
+                                                          'y': x, 'x': x})
+        step1 = prover.add_instantiated_assumption(conditional, ADDITIONAL_QUANTIFICATION_AXIOMS[15], {'R': not_r_sub,
+                                                                'Q': Q_sub, 'y': x, 'x': x})
+
+    final_formula = Formula(switched_f.root, x, internal_formula)
 
     step2 = prover.add_proof(to_inline.conclusion, to_inline)
     step3 = prover.add_mp(conditional.second, step2, step1)
