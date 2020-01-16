@@ -169,31 +169,30 @@ def uniquely_rename_quantified_variables(formula: Formula) -> \
     # case quantifier
     if is_quantifier(formula.root):
         z_curr = next(fresh_variable_name_generator)
-        f_pred_new = formula.predicate.substitute({formula.variable: Term(z_curr)})
-        f_pred_new, to_inline = uniquely_rename_quantified_variables(f_pred_new)
+        f_pred_new, to_inline = uniquely_rename_quantified_variables(formula.predicate)
         antecedent = prover.add_proof(to_inline.conclusion, to_inline)
-        f_new = Formula(formula.root, formula.variable, f_pred_new)
+
+        x = formula.variable
         y = z_curr
-        R = formula.predicate.substitute({z_curr: Term('_')})
-        Q = f_new.predicate
+        R = formula.predicate.substitute({formula.variable: Term('_')})
+        Q = f_pred_new.substitute({formula.variable: Term('_')})
 
         # case A
         if formula.root is 'A':
-            f_imp_fnew = Schema(Formula.parse('(((R(x)->Q(x))&(Q(x)->R(x)))->'
-                                           '((Ax[R(x)]->Ay[Q(y)])&(Ay[Q(y)]->Ax[R(x)])))')).instantiate({'R': R,
-                                                                                                         'Q': f_new, 'y': y})
-            conditional = prover.add_instantiated_assumption(f_imp_fnew, ADDITIONAL_QUANTIFICATION_AXIOMS[14], {'R': formula,
-                                                                                                            'Q': Q, 'y':y})
+            f_imp_fnew = ADDITIONAL_QUANTIFICATION_AXIOMS[14].instantiate({'R': R, 'Q': Q, 'y': y, 'x':x})
+            conditional = prover.add_instantiated_assumption(f_imp_fnew, ADDITIONAL_QUANTIFICATION_AXIOMS[14], {'R': R,
+                                                                                                            'Q': Q, 'y': y,
+                                                                                                                'x':x})
         # case E
         else:
-            f_imp_fnew = Schema(Formula.parse('(((R(x)->Q(x))&(Q(x)->R(x)))->'
-                                              '((Ex[R(x)]->Ey[Q(y)])&(Ey[Q(y)]->Ex[R(x)])))')).instantiate({'R': R,
-                                                                                                            'Q': f_new, 'y': y})
-            conditional = prover.add_instantiated_assumption(f_imp_fnew, ADDITIONAL_QUANTIFICATION_AXIOMS[15], {'R': formula,
-                                                                                                            'Q': Q,
-                                                                                                     'y':y})
+            f_imp_fnew = ADDITIONAL_QUANTIFICATION_AXIOMS[15].instantiate({'R': R, 'Q': Q, 'y': y, 'x': x})
+            conditional = prover.add_instantiated_assumption(f_imp_fnew, ADDITIONAL_QUANTIFICATION_AXIOMS[15], {'R': R,
+                                                                                                            'Q': Q,'y':y, 'x':x})
         conclusion = f_imp_fnew.second
         prover.add_mp(conclusion, antecedent, conditional)
+        f = Formula(formula.root, z_curr, f_pred_new.substitute({formula.variable: Term(z_curr)}))
+        p = prover.qed()
+        return f, p
 
     # case all unique
     if has_uniquely_named_variables(formula):
@@ -204,26 +203,24 @@ def uniquely_rename_quantified_variables(formula: Formula) -> \
     # case ~
     if is_unary(formula.root):
         not_f, to_inline = uniquely_rename_quantified_variables(formula.first)
-        prover.add_proof(to_inline.conclusion, to_inline)  #@todo add lines for not f?
+        step0 = prover.add_proof(to_inline.conclusion, to_inline)
 
         new_f = Formula('~', not_f)
         f_imp_fchanged = Schema(Formula.parse('((R()->Q())&(Q()->R()))'), {'R', 'Q'}).instantiate(
             {'R': formula, 'Q': new_f})
-        step0 = prover.add_tautology(f_imp_fchanged)
-        # prover.add_tautological_implication(new_f, {step0})
+        prover.add_tautological_implication(f_imp_fchanged, {step0})
         return new_f, prover.qed()
-#((R(x)->Q(x))&(Q(x)->R(x)))
+
     # case binary
     if is_binary(formula.root):
         f1, to_inline1 = uniquely_rename_quantified_variables(formula.first)
         f2, to_inline2 = uniquely_rename_quantified_variables(formula.second)
-        prover.add_proof(to_inline1.conclusion, to_inline1)
-        prover.add_proof(to_inline2.conclusion, to_inline2)
+        step0 = prover.add_proof(to_inline1.conclusion, to_inline1)
+        step1 = prover.add_proof(to_inline2.conclusion, to_inline2)
         f_new = Formula(formula.root, f1, f2)
         f_imp_fchanged = Schema(Formula.parse('((R()->Q())&(Q()->R()))'), {'R', 'Q'}).instantiate(
             {'R': formula, 'Q': f_new})
-        step0 = prover.add_tautology(f_imp_fchanged)
-        # prover.add_tautological_implication(f_new, {step0})
+        prover.add_tautological_implication(f_imp_fchanged, {step0, step1})
         return f_new, prover.qed()
 
 
