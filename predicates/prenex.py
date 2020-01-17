@@ -378,7 +378,7 @@ Formula) -> \
         return formula, prover.qed()
 
     x_y_dict = {formula.first.variable: Term('_')}
-    first_parametrised = formula.first.substitute(x_y_dict)
+    first_parametrised = formula.first.predicate.substitute(x_y_dict)
     axiom_line_dict = {'x': formula.first.variable, 'R':first_parametrised, 'Q': formula.second}
 
     # recursion case
@@ -395,7 +395,7 @@ Formula) -> \
     step0 = prover.add_instantiated_assumption(axiom_line, ADDITIONAL_QUANTIFICATION_AXIOMS[i], axiom_line_dict)
 
     internal_f_original = axiom_line.first.second.predicate  # R(x)&Q()
-    internal_formula_equivalent, to_inline = pull_out_quantifications_across_binary_operator(internal_f_original)
+    internal_formula_equivalent, to_inline = pull_out_quantifications_from_left_across_binary_operator(internal_f_original)
     step1 = prover.add_proof(to_inline.conclusion, to_inline)  # new internal = old internal
 
     p_internal_f_original = internal_f_original.substitute(x_y_dict)
