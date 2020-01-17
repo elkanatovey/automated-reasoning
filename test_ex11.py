@@ -32,7 +32,7 @@ def test_task6(debug=False):
 
 def test_task7(debug=False):
     test_pull_out_quantifications_from_left_across_binary_operator(debug)
-    test_pull_out_quantifications_from_right_across_binary_operator(debug)
+    # test_pull_out_quantifications_from_right_across_binary_operator(debug)
 
 def test_task8(debug=False):
     test_pull_out_quantifications_across_binary_operator(debug)
@@ -48,8 +48,8 @@ def test_task10(debug=False):
 # test_task3(True)
 # #test_task4(True) # Optional
 # test_task5(True)
-test_task6(True)
-# test_task7(True)
+# test_task6(True)
+test_task7(True)
 # test_task8(True)
 # test_task9(True)
 # test_task10(True)
