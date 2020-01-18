@@ -364,12 +364,7 @@ Formula) -> \
     assert has_uniquely_named_variables(formula)
     assert is_binary(formula.root)
     # Task 11.7.1
-    # Schema(Formula.parse('(((Ax[R(x)]&Q())->Ax[(R(x)&Q())])&'
-    #                      '(Ax[(R(x)&Q())]->(Ax[R(x)]&Q())))'), {'x', 'R', 'Q'}),
-    # Schema(Formula.parse('(((Ex[R(x)]&Q())->Ex[(R(x)&Q())])&'
-    #                      '(Ex[(R(x)&Q())]->(Ex[R(x)]&Q())))'), {'x', 'R', 'Q'}),
     prover = Prover(ADDITIONAL_QUANTIFICATION_AXIOMS)
-
 
     # base case
     if is_quantifier_free(formula.first):
@@ -413,17 +408,6 @@ Formula) -> \
 
     step4 = prover.add_tautological_implication(equivalence_of(formula, add_quant_back.second.first.second),{step0, step3})
     return add_quant_back.second.first.second, prover.qed()
-
-
-    # Schema(Formula.parse('(((R(x)->Q(x))&(Q(x)->R(x)))->'
-    #                      '((Ax[R(x)]->Ay[Q(y)])&(Ay[Q(y)]->Ax[R(x)])))'),
-    #        {'x', 'y', 'R', 'Q'}),
-    # Schema(Formula.parse('(((R(x)->Q(x))&(Q(x)->R(x)))->'
-    #                      '((Ex[R(x)]->Ey[Q(y)])&(Ey[Q(y)]->Ex[R(x)])))'),
-    #        {'x', 'y', 'R', 'Q'}))
-
-
-
 
 
 def pull_out_quantifications_from_right_across_binary_operator(formula:
@@ -472,6 +456,48 @@ Formula) -> \
     assert has_uniquely_named_variables(formula)
     assert is_binary(formula.root)
     # Task 11.7.2
+    prover = Prover(ADDITIONAL_QUANTIFICATION_AXIOMS)
+
+    # base case
+    if is_quantifier_free(formula.second):
+        equality = equivalence_of(formula, formula)
+        prover.add_tautology(equality)
+        return formula, prover.qed()
+
+    x_y_dict = {formula.second.variable: Term('_')}
+    second_parametrised = formula.second.predicate.substitute(x_y_dict)
+    axiom_line_dict = {'x': formula.second.variable, 'R':second_parametrised, 'Q': formula.first}
+
+    # recursion case
+    if formula.second.root is 'A':
+        i = (4 if formula.root is '&' else 8 if formula.root is '|' else 12)
+        axiom_line = ADDITIONAL_QUANTIFICATION_AXIOMS[i].instantiate(axiom_line_dict)
+        j = 14
+
+    else:
+        i = (5 if formula.root is '&' else 9 if formula.root is '|' else 13)
+        axiom_line = ADDITIONAL_QUANTIFICATION_AXIOMS[i].instantiate(axiom_line_dict)
+        j = 15
+
+    step0 = prover.add_instantiated_assumption(axiom_line, ADDITIONAL_QUANTIFICATION_AXIOMS[i], axiom_line_dict)
+    internal_f_original = axiom_line.first.second.predicate  # R(x)&Q()
+    internal_formula_equivalent, to_inline = pull_out_quantifications_from_right_across_binary_operator(
+        internal_f_original)
+    step1 = prover.add_proof(to_inline.conclusion, to_inline)  # new internal = old internal
+
+    p_internal_f_original = internal_f_original.substitute(x_y_dict)
+    p_internal_formula_equivalent = internal_formula_equivalent.substitute(x_y_dict)
+    add_quant_dict = {'R':p_internal_f_original,
+                      'Q':p_internal_formula_equivalent,
+                      'x':formula.second.variable, 'y': formula.second.variable}
+
+    add_quant_back = ADDITIONAL_QUANTIFICATION_AXIOMS[j].instantiate(add_quant_dict)
+    step2 = prover.add_instantiated_assumption(add_quant_back, ADDITIONAL_QUANTIFICATION_AXIOMS[j], add_quant_dict)
+    step3 = prover.add_mp(add_quant_back.second, step1, step2)
+
+    step4 = prover.add_tautological_implication(equivalence_of(formula, add_quant_back.second.first.second),{step0, step3})
+    return add_quant_back.second.first.second, prover.qed()
+
 
 
 def pull_out_quantifications_across_binary_operator(formula: Formula) -> \
