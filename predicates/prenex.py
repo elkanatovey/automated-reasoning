@@ -546,6 +546,38 @@ def pull_out_quantifications_across_binary_operator(formula: Formula) -> \
     assert has_uniquely_named_variables(formula)
     assert is_binary(formula.root)
     # Task 11.8
+    prover = Prover(ADDITIONAL_QUANTIFICATION_AXIOMS)
+
+    f_pulled_l, left_proof = pull_out_quantifications_from_left_across_binary_operator(formula)
+    step0 = prover.add_proof(left_proof.conclusion, left_proof)  # f_pulled_l = formula
+
+    internal = f_pulled_l
+    wrappers = []
+    while is_quantifier(internal.root):
+        wrappers.append((internal.root, internal.variable))
+        internal = internal.predicate
+
+    internal_pulled_r, right_proof = pull_out_quantifications_from_right_across_binary_operator(internal)
+    step1 = prover.add_proof(right_proof.conclusion, right_proof)  # internal = internal_pulled_r
+    antecedent_step = step1
+
+    for root, var in reversed(wrappers):
+        p_r = internal_pulled_r.substitute({var:Term('_')})
+        p_i = internal.substitute({var:Term('_')})
+        inst_dict = {'R': p_i, 'Q': p_r, 'x':var, 'y':var}
+
+        internal_pulled_r = Formula(root, var, internal_pulled_r)
+        internal = Formula(root, var, internal)
+        i = (14 if root is 'A' else 15)
+
+        schema_line = ADDITIONAL_QUANTIFICATION_AXIOMS[i].instantiate(inst_dict)
+        conditional_step = prover.add_instantiated_assumption(schema_line, ADDITIONAL_QUANTIFICATION_AXIOMS[i],
+                                                             inst_dict)
+        antecedent_step = prover.add_mp(schema_line.second,antecedent_step, conditional_step)
+
+    f_pulled_r_eq_f = equivalence_of(formula, internal_pulled_r)
+    prover.add_tautological_implication(f_pulled_r_eq_f, {step0, antecedent_step})
+    return internal_pulled_r, prover.qed()
 
 
 def to_prenex_normal_form_from_uniquely_named_variables(formula: Formula) -> \
