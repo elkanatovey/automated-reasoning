@@ -614,6 +614,62 @@ def to_prenex_normal_form_from_uniquely_named_variables(formula: Formula) -> \
     """
     assert has_uniquely_named_variables(formula)
     # Task 11.9
+    prover = Prover(ADDITIONAL_QUANTIFICATION_AXIOMS)
+
+    if is_unary(formula.root):
+        internal_p, to_inline = to_prenex_normal_form_from_uniquely_named_variables(formula.first)
+        not_internal_p = Formula('~', internal_p)
+        f_eq_nip = equivalence_of(formula, not_internal_p)
+        step0 = prover.add_proof(to_inline.conclusion, to_inline)
+        step1 = prover.add_tautological_implication(f_eq_nip, {step0})
+
+        to_return, to_inline_f = pull_out_quantifications_across_negation(not_internal_p)
+        step2 = prover.add_proof(to_inline_f.conclusion, to_inline_f)
+        step3 = prover.add_tautological_implication(equivalence_of(formula,to_return), {step1, step2})
+        return to_return, prover.qed()
+
+    if is_binary(formula.root):
+        left_p, l_to_inline = to_prenex_normal_form_from_uniquely_named_variables(formula.first)
+        right_p, r_to_inline = to_prenex_normal_form_from_uniquely_named_variables(formula.second)
+
+        step0 = prover.add_proof(l_to_inline.conclusion, l_to_inline)
+
+        lp_op_r = Formula(formula.root, left_p, formula.second)  # a
+        lp_op_r_eq_f = equivalence_of(lp_op_r, formula)
+        step1 = prover.add_tautological_implication(lp_op_r_eq_f, {step0})
+
+        step2 = prover.add_proof(r_to_inline.conclusion, r_to_inline)
+        lp_op_rp = Formula(formula.root, left_p, right_p)  # b
+        a_eq_b = equivalence_of(lp_op_r, lp_op_rp)
+
+        step3 = prover.add_tautological_implication(a_eq_b, {step1, step2})
+        step4 = prover.add_tautological_implication(equivalence_of(lp_op_rp, formula), {step1, step3})
+
+        to_return, to_inline_f = pull_out_quantifications_across_binary_operator(lp_op_rp)
+        step5 = prover.add_proof(to_inline_f.conclusion, to_inline_f)
+        step6 = prover.add_tautological_implication(equivalence_of(to_return, formula), {step4, step5})
+
+        return to_return, prover.qed()
+
+
+    if is_quantifier(formula.root):
+        internal_p, to_inline = to_prenex_normal_form_from_uniquely_named_variables(formula.predicate)
+
+        antecedent = prover.add_proof(to_inline.conclusion, to_inline)
+
+        i = (14 if formula.root is 'A' else 15)
+        pred = formula.predicate.substitute({formula.variable:Term('_')})
+        ip_sub = internal_p.substitute({formula.variable:Term('_')})
+
+        inst_map = {'R':pred, 'Q':ip_sub, 'x':formula.variable, 'y': formula.variable}
+        axiom_line = ADDITIONAL_QUANTIFICATION_AXIOMS[i].instantiate(inst_map)
+        conditional = prover.add_instantiated_assumption(axiom_line, ADDITIONAL_QUANTIFICATION_AXIOMS[i], inst_map)
+        step2 = prover.add_mp(axiom_line.second, antecedent, conditional)
+
+        return Formula(formula.root, formula.variable, internal_p), prover.qed()
+
+    prover.add_tautology(equivalence_of(formula, formula))
+    return formula, prover.qed()
 
 
 def to_prenex_normal_form(formula: Formula) -> Tuple[Formula, Proof]:
