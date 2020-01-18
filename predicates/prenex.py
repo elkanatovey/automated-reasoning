@@ -194,12 +194,6 @@ def uniquely_rename_quantified_variables(formula: Formula) -> \
         p = prover.qed()
         return f, p
 
-    # case all unique
-    if has_uniquely_named_variables(formula):
-        f_imp_f = Schema(Formula.parse('((R()->Q())&(Q()->R()))'), {'R', 'Q'}).instantiate({'R': formula, 'Q': formula})
-        prover.add_tautology(f_imp_f)
-        return formula, prover.qed()
-
     # case ~
     if is_unary(formula.root):
         not_f, to_inline = uniquely_rename_quantified_variables(formula.first)
@@ -222,6 +216,12 @@ def uniquely_rename_quantified_variables(formula: Formula) -> \
             {'R': formula, 'Q': f_new})
         prover.add_tautological_implication(f_imp_fchanged, {step0, step1})
         return f_new, prover.qed()
+
+    # case all unique
+    if has_uniquely_named_variables(formula):
+        f_imp_f = Schema(Formula.parse('((R()->Q())&(Q()->R()))'), {'R', 'Q'}).instantiate({'R': formula, 'Q': formula})
+        prover.add_tautology(f_imp_f)
+        return formula, prover.qed()
 
 
 def pull_out_quantifications_across_negation(formula: Formula) -> \
@@ -689,3 +689,14 @@ def to_prenex_normal_form(formula: Formula) -> Tuple[Formula, Proof]:
         `ADDITIONAL_QUANTIFICATION_AXIOMS`.
     """
     # Task 11.10
+    prover = Prover(ADDITIONAL_QUANTIFICATION_AXIOMS)
+
+    unique_f, to_inline = uniquely_rename_quantified_variables(formula)
+    step1 = prover.add_proof(to_inline.conclusion, to_inline)
+
+    unique_fp, to_inline_fp = to_prenex_normal_form_from_uniquely_named_variables(unique_f)
+    step2 = prover.add_proof(to_inline_fp.conclusion, to_inline_fp)
+
+    prover.add_tautological_implication(equivalence_of(formula, unique_fp), {step1, step2})
+
+    return unique_fp, prover.qed()
