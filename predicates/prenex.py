@@ -651,7 +651,6 @@ def to_prenex_normal_form_from_uniquely_named_variables(formula: Formula) -> \
 
         return to_return, prover.qed()
 
-
     if is_quantifier(formula.root):
         internal_p, to_inline = to_prenex_normal_form_from_uniquely_named_variables(formula.predicate)
 
@@ -661,7 +660,7 @@ def to_prenex_normal_form_from_uniquely_named_variables(formula: Formula) -> \
         pred = formula.predicate.substitute({formula.variable:Term('_')})
         ip_sub = internal_p.substitute({formula.variable:Term('_')})
 
-        inst_map = {'R':pred, 'Q':ip_sub, 'x':formula.variable, 'y': formula.variable}
+        inst_map = {'R': ip_sub, 'Q': pred, 'x': formula.variable, 'y': formula.variable}
         axiom_line = ADDITIONAL_QUANTIFICATION_AXIOMS[i].instantiate(inst_map)
         conditional = prover.add_instantiated_assumption(axiom_line, ADDITIONAL_QUANTIFICATION_AXIOMS[i], inst_map)
         step2 = prover.add_mp(axiom_line.second, antecedent, conditional)
