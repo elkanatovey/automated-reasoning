@@ -19,7 +19,7 @@ ADDITIONAL_QUANTIFICATION_AXIOMS = (
            {'x', 'R'}),
     Schema(Formula.parse('((~Ex[R(x)]->Ax[~R(x)])&(Ax[~R(x)]->~Ex[R(x)]))'),
            {'x', 'R'}),
-    Schema(Formula.parse('(((Ax[R(x)]&Q())->Ax[(R(x)&Q())])&'
+    Schema(Formula.parse('(((Ax[R(x)]&Q())->Ax[(R(x)&Q())])&' #2
                          '(Ax[(R(x)&Q())]->(Ax[R(x)]&Q())))'), {'x', 'R', 'Q'}),
     Schema(Formula.parse('(((Ex[R(x)]&Q())->Ex[(R(x)&Q())])&'
                          '(Ex[(R(x)&Q())]->(Ex[R(x)]&Q())))'), {'x', 'R', 'Q'}),
@@ -27,7 +27,7 @@ ADDITIONAL_QUANTIFICATION_AXIOMS = (
                          '(Ax[(Q()&R(x))]->(Q()&Ax[R(x)])))'), {'x', 'R', 'Q'}),
     Schema(Formula.parse('(((Q()&Ex[R(x)])->Ex[(Q()&R(x))])&'
                          '(Ex[(Q()&R(x))]->(Q()&Ex[R(x)])))'), {'x', 'R', 'Q'}),
-    Schema(Formula.parse('(((Ax[R(x)]|Q())->Ax[(R(x)|Q())])&'
+    Schema(Formula.parse('(((Ax[R(x)]|Q())->Ax[(R(x)|Q())])&'#6
                          '(Ax[(R(x)|Q())]->(Ax[R(x)]|Q())))'), {'x', 'R', 'Q'}),
     Schema(Formula.parse('(((Ex[R(x)]|Q())->Ex[(R(x)|Q())])&'
                          '(Ex[(R(x)|Q())]->(Ex[R(x)]|Q())))'), {'x', 'R', 'Q'}),
@@ -383,14 +383,17 @@ Formula) -> \
 
     # recursion case
     if formula.first.root is 'A':
-        axiom_line = ADDITIONAL_QUANTIFICATION_AXIOMS[2].instantiate(axiom_line_dict)
-        i=2
-        j=14
+        i = (2 if formula.root is '&' else 6 if formula.root is '|' else 10)
+        axiom_line = ADDITIONAL_QUANTIFICATION_AXIOMS[i].instantiate(axiom_line_dict)
+
+        j = 15 if i == 10 else 14
+
 
     else:
-        axiom_line = ADDITIONAL_QUANTIFICATION_AXIOMS[3].instantiate(axiom_line_dict)
-        i=3
-        j=15
+        i = (3 if formula.root is '&' else 7 if formula.root is '|' else 11)
+        axiom_line = ADDITIONAL_QUANTIFICATION_AXIOMS[i].instantiate(axiom_line_dict)
+
+        j = 14 if i == 11 else 15
 
     step0 = prover.add_instantiated_assumption(axiom_line, ADDITIONAL_QUANTIFICATION_AXIOMS[i], axiom_line_dict)
 
