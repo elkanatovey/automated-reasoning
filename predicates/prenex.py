@@ -271,7 +271,7 @@ def pull_out_quantifications_across_negation(formula: Formula) -> \
     prover = Prover(ADDITIONAL_QUANTIFICATION_AXIOMS)
 
     #base case
-    if is_quantifier_free(formula):
+    if not is_quantifier(formula.first.root):
         equality = equivalence_of(formula, formula)
         prover.add_tautology(equality)
         return formula, prover.qed()
@@ -367,7 +367,7 @@ Formula) -> \
     prover = Prover(ADDITIONAL_QUANTIFICATION_AXIOMS)
 
     # base case
-    if is_quantifier_free(formula.first):
+    if not is_quantifier(formula.first.root):
         equality = equivalence_of(formula, formula)
         prover.add_tautology(equality)
         return formula, prover.qed()
@@ -459,7 +459,7 @@ Formula) -> \
     prover = Prover(ADDITIONAL_QUANTIFICATION_AXIOMS)
 
     # base case
-    if is_quantifier_free(formula.second):
+    if not is_quantifier(formula.second.root):
         equality = equivalence_of(formula, formula)
         prover.add_tautology(equality)
         return formula, prover.qed()
