@@ -9,8 +9,8 @@ from predicates.syntax_test import *
 from predicates.completeness_test import *
 
 def test_task1(debug=False):
-    test_is_primitively_closed(debug)
-    # test_is_universally_closed(debug)
+    # test_is_primitively_closed(debug)
+    test_is_universally_closed(debug)
     # test_is_existentially_closed(debug)
 
 def test_task2(debug=False):
