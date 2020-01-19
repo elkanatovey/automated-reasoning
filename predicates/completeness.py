@@ -13,6 +13,7 @@ from predicates.proofs import *
 from predicates.prover import *
 from predicates.deduction import *
 from predicates.prenex import *
+from itertools import product
 
 def get_constants(formulas: AbstractSet[Formula]) -> Set[str]:
     """Finds all constant names in the given formulas.
@@ -63,6 +64,25 @@ def is_primitively_closed(sentences: AbstractSet[Formula]) -> bool:
         assert is_in_prenex_normal_form(sentence) and \
                len(sentence.free_variables()) == 0
     # Task 12.1.1
+    name = 0
+    arity = 1
+    all_constants = get_constants(sentences)
+    all_relations = set()
+
+    for sentence in sentences:
+        all_relations = all_relations.union(sentence.relations())
+
+    for relation in all_relations:
+        combinations = product(all_constants, repeat=relation[arity])
+
+        for combination in combinations:
+            f = Formula(relation[name], list(combination))
+            n_f = Formula('~', f)
+
+            if (n_f not in sentences) and (f not in sentences):
+                return False
+    return True
+
 
 def is_universally_closed(sentences: AbstractSet[Formula]) -> bool:
     """Checks whether the given set of prenex-normal-form sentences is
