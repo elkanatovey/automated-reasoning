@@ -175,6 +175,20 @@ def find_unsatisfied_quantifier_free_sentence(sentences: Container[Formula],
     assert unsatisfied in sentences
     assert not model.evaluate_formula(unsatisfied)
     # Task 12.2
+    if is_quantifier_free(unsatisfied):
+        return unsatisfied
+
+    if unsatisfied.root is 'A':
+        for constant in model.universe:
+            quant_removed = unsatisfied.predicate.substitute({unsatisfied.variable: Term(constant)})
+            if not model.evaluate_formula(quant_removed):
+                return find_unsatisfied_quantifier_free_sentence(sentences, model, quant_removed)
+
+    if unsatisfied.root is 'E':
+        for constant in model.universe:
+            quant_removed = unsatisfied.predicate.substitute({unsatisfied.variable: Term(constant)})
+            if quant_removed in sentences:
+                return find_unsatisfied_quantifier_free_sentence(sentences, model, quant_removed)
 
 def get_primitives(quantifier_free: Formula) -> Set[Formula]:
     """Finds all primitive subformulas of the given quantifier-free formula.
