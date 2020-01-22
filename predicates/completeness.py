@@ -207,6 +207,16 @@ def get_primitives(quantifier_free: Formula) -> Set[Formula]:
     """
     assert is_quantifier_free(quantifier_free)
     # Task 12.3.1
+    if is_unary(quantifier_free.root):
+        return get_primitives(quantifier_free.first)
+
+    if is_binary(quantifier_free.root):
+        primitives = get_primitives(quantifier_free.first)
+        primitives = primitives.union(get_primitives(quantifier_free.second))
+        return primitives
+
+    else:
+        return {quantifier_free}
 
 def model_or_inconsistency(sentences: AbstractSet[Formula]) -> \
         Union[Model[str], Proof]:
@@ -224,6 +234,35 @@ def model_or_inconsistency(sentences: AbstractSet[Formula]) -> \
     """    
     assert is_closed(sentences)
     # Task 12.3.2
+
+    universe = get_constants(sentences)
+    constant_meanings = dict()
+    relation_meanings = dict()
+    for constant in universe:
+        constant_meanings[constant] = constant
+
+    for sentence in sentences:
+        if is_relation(sentence.root):
+            arguments = []
+            for arg in sentence.arguments:
+                arguments.append(arg.root)
+            arguments = tuple(arguments)
+            if sentence.root in relation_meanings:
+                relation_meanings[sentence.root].add(arguments)
+            else:
+                relation_meanings[sentence.root] = {arguments}
+
+    model = Model(universe, constant_meanings, relation_meanings)
+
+    for sentence in sentences:
+        if not model.evaluate_formula(sentence, constant_meanings):
+            unsatisfied = find_unsatisfied_quantifier_free_sentence(sentences, model, sentence)
+            break
+        else:
+            return model
+
+
+
 
 def combine_contradictions(proof_from_affirmation: Proof,
                            proof_from_negation: Proof) -> Proof:
