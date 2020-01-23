@@ -406,6 +406,14 @@ def universal_closure_step(sentences: AbstractSet[Formula]) -> Set[Formula]:
                len(sentence.free_variables()) == 0
     # Task 12.6
 
+    all_constants = get_constants(sentences)
+    new_sentences = set()
+    for sentence in sentences:
+        if sentence.root is 'A':
+            for constant in all_constants:
+                new_sentences.add(sentence.predicate.substitute({sentence.variable: Term(constant)}))
+    return set(sentences) | new_sentences
+
 def replace_constant(proof: Proof, constant: str, variable: str = 'zz') -> \
         Proof:
     """Replaces all occurrences of the given constant in the given proof with
