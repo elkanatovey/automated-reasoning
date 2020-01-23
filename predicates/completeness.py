@@ -442,10 +442,38 @@ def replace_constant(proof: Proof, constant: str, variable: str = 'zz') -> \
     # Task 12.7.1
 
     new_assumptions = set()
+    replacement_assumptions = {}
+    sub_map = {constant: Term(variable)}
+
     for assumption in proof.assumptions:
-        new_assumptions.add(Schema(assumption.formula.substitute({constant: Term(variable)}), assumption.templates))
+        new_assumptions.add(Schema(assumption.formula.substitute(sub_map), assumption.templates))
+        replacement_assumptions[assumption] = Schema(assumption.formula.substitute(sub_map),
+                                                  assumption.templates)
 
     new_lines = []
+    for line in proof.lines:
+        if isinstance(line, Proof.AssumptionLine):
+            new_schema = replacement_assumptions[line.assumption]
+            new_insta_map = {}
+            for key, val in line.instantiation_map.items():
+                if is_constant(key) or is_relation(key):
+                    a = val.substitute(sub_map)
+                else:
+                    a = val
+                new_insta_map[key if key != constant else val] = a
+
+            new_lines.append(Proof.AssumptionLine(line.formula.substitute(sub_map),
+                                                  new_schema,
+                                                  new_insta_map))
+        elif isinstance(line, Proof.TautologyLine):
+            new_lines.append(Proof.TautologyLine(line.formula.substitute(sub_map)))
+        elif isinstance(line, Proof.UGLine):
+            new_lines.append(Proof.UGLine(line.formula.substitute(sub_map), line.predicate_line_number))
+        elif isinstance(line, Proof.MPLine):
+            new_lines.append(Proof.MPLine(line.formula.substitute(sub_map), line.antecedent_line_number,
+                                          line.conditional_line_number))
+    new_proof = Proof(new_assumptions, proof.conclusion.substitute(sub_map), new_lines)
+    return new_proof
 
 
 def eliminate_existential_witness_assumption(proof: Proof, constant: str,
