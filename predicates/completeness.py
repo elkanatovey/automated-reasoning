@@ -254,12 +254,42 @@ def model_or_inconsistency(sentences: AbstractSet[Formula]) -> \
 
     model = Model(universe, constant_meanings, relation_meanings)
 
+    flag = True
     for sentence in sentences:
         if not model.evaluate_formula(sentence, constant_meanings):
             unsatisfied = find_unsatisfied_quantifier_free_sentence(sentences, model, sentence)
+            assumptions = {unsatisfied}
+            flag = False
             break
-        else:
-            return model
+    if flag:
+        return model
+
+    for primitive in get_primitives(unsatisfied):
+        if primitive in sentences:
+            assumptions.add(str(primitive))
+        elif Formula('~', primitive) in sentences:
+            assumptions.add(Formula('~', primitive))
+
+    not_unsatisfied = Formula('~', unsatisfied)
+    conclusion = Formula('&', unsatisfied, not_unsatisfied)
+
+    prover = Prover(assumptions, conclusion)
+    lines = set()
+    for assumption in assumptions:
+        line = prover.add_assumption(assumption)
+        lines.add(line)
+    # lines.remove(unsatisfied) #TODO
+
+    step1 = prover.add_assumption(unsatisfied)
+    step2 = prover.add_tautological_implication(str(not_unsatisfied), lines)
+    step3 = prover.add_tautological_implication(conclusion, {step1, step2})
+
+    return prover.qed()
+
+
+
+
+
 
 
 
