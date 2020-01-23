@@ -441,6 +441,13 @@ def replace_constant(proof: Proof, constant: str, variable: str = 'zz') -> \
         assert variable not in line.formula.variables()
     # Task 12.7.1
 
+    new_assumptions = set()
+    for assumption in proof.assumptions:
+        new_assumptions.add(Schema(assumption.formula.substitute({constant: Term(variable)}), assumption.templates))
+
+    new_lines = []
+
+
 def eliminate_existential_witness_assumption(proof: Proof, constant: str,
                                              witness: Formula,
                                              existential: Formula) -> Proof:
