@@ -273,7 +273,7 @@ def model_or_inconsistency(sentences: AbstractSet[Formula]) -> \
     not_unsatisfied = Formula('~', unsatisfied)
     conclusion = Formula('&', unsatisfied, not_unsatisfied)
 
-    prover = Prover(assumptions, conclusion)
+    prover = Prover(assumptions)
     lines = set()
     for assumption in assumptions:
         line = prover.add_assumption(assumption)
@@ -285,13 +285,6 @@ def model_or_inconsistency(sentences: AbstractSet[Formula]) -> \
     step3 = prover.add_tautological_implication(conclusion, {step1, step2})
 
     return prover.qed()
-
-
-
-
-
-
-
 
 
 def combine_contradictions(proof_from_affirmation: Proof,
@@ -335,6 +328,18 @@ def combine_contradictions(proof_from_affirmation: Proof,
                                                 negated_assumption}):
         assert len(assumption.formula.free_variables()) == 0
     # Task 12.4
+
+    contradiction_proof_affirmation = proof_by_way_of_contradiction(proof_from_affirmation, affirmed_assumption.formula)
+    contradiction_proof_negation = proof_by_way_of_contradiction(proof_from_negation, negated_assumption.formula)
+
+    conclusion = Formula('&', contradiction_proof_affirmation.conclusion, contradiction_proof_negation.conclusion)
+    prover = Prover(common_assumptions)
+    step1 = prover.add_proof(contradiction_proof_affirmation.conclusion, contradiction_proof_affirmation)
+    step2 = prover.add_proof(contradiction_proof_negation.conclusion, contradiction_proof_negation)
+    step3 = prover.add_tautological_implication(conclusion, {step1, step2})
+
+    return prover.qed()
+
 
 def eliminate_universal_instantiation_assumption(proof: Proof, constant: str,
                                                  instantiation: Formula,
