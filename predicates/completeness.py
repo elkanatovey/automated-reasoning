@@ -550,3 +550,14 @@ def existential_closure_step(sentences: AbstractSet[Formula]) -> Set[Formula]:
         assert is_in_prenex_normal_form(sentence) and \
                len(sentence.free_variables()) == 0
     # Task 12.8
+    
+    all_constants = get_constants(sentences)
+    new_additions = set()
+    for sentence in sentences:
+        if sentence.root is 'E':
+            if not any(sentence.predicate.substitute({sentence.variable: Term(constant)}) in sentences for
+                           constant in all_constants):
+                new_constant = next(fresh_constant_name_generator)
+                new_witness = sentence.predicate.substitute({sentence.variable: Term(new_constant)})
+                new_additions.add(new_witness)
+    return set(sentences) | new_additions
