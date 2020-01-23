@@ -513,6 +513,21 @@ def eliminate_existential_witness_assumption(proof: Proof, constant: str,
     for assumption in proof.assumptions.difference({Schema(witness)}):
         assert constant not in assumption.formula.constants()
     # Task 12.7.2
+    
+    new_proof = replace_constant(proof, constant, variable='zz')
+    contradiction = proof_by_way_of_contradiction(new_proof, witness.substitute({constant: Term('zz')}))
+    new_assumptions = contradiction.assumptions - {Schema(witness)}
+    conclusion = Formula('&', existential, Formula('~', existential))
+    prover = Prover(new_assumptions)
+    sub_map = {'zz': Term(existential.variable)}
+
+    step1 = prover.add_proof(contradiction.conclusion, contradiction)
+    step2 = prover.add_free_instantiation(contradiction.conclusion.substitute(sub_map), step1, sub_map)
+    step3 = prover.add_tautological_implication(Formula('->', existential.predicate, conclusion), {step2})
+    step4 = prover.add_assumption(existential)
+    step5 = prover.add_existential_derivation(conclusion, step4, step3)
+
+    return prover.qed()
 
 def existential_closure_step(sentences: AbstractSet[Formula]) -> Set[Formula]:
     """Augments the given sentences with an existential witness that uses a new
