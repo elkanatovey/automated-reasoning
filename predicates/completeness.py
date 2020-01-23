@@ -373,6 +373,19 @@ def eliminate_universal_instantiation_assumption(proof: Proof, constant: str,
         assert len(assumption.formula.free_variables()) == 0
     # Task 12.5
 
+    proof_contradiction_universal = proof_by_way_of_contradiction(proof, instantiation)
+
+    conclusion = Formula('&', Formula('~', instantiation), instantiation)
+    new_assumptions = proof.assumptions - {Schema(instantiation)}
+
+    prover = Prover(new_assumptions)
+    step1 = prover.add_assumption(universal)
+    step2 = prover.add_universal_instantiation(instantiation, step1, constant)
+    step3 = prover.add_proof(proof_contradiction_universal.conclusion, proof_contradiction_universal)
+    step4 = prover.add_tautological_implication(conclusion, {step2, step3})
+
+    return prover.qed()
+
 def universal_closure_step(sentences: AbstractSet[Formula]) -> Set[Formula]:
     """Augments the given sentences with all universal instantiations of each
     universally quantified sentence from these sentences, with respect to all
