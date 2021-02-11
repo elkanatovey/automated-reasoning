@@ -1,9 +1,4 @@
-# (c) This file is part of the course
-# Mathematical Logic through Programming
-# by Gonczarowski and Nisan.
-# File name: test_ex1.py
-
-"""Tests all Chapter 1 tasks."""
+"""Tests all syntax tasks."""
 
 from propositions.syntax_test import *
 
@@ -25,17 +20,9 @@ def test_task5(debug=False):
 def test_task6(debug=False):
     test_parse(debug)
 
-def test_task7(debug=False):
-    test_polish()
-
-def test_task8(debug=False):
-    test_parse_polish()
-
 test_task1(True)
 test_task2(True)
 test_task3(True)
 test_task4(True)
 test_task5(True)
 test_task6(True)
-#test_task7(True) # Optional
-#test_task8(True) # Optional

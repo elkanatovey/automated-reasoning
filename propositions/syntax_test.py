@@ -1,8 +1,3 @@
-# (c) This file is part of the course
-# Mathematical Logic through Programming
-# by Gonczarowski and Nisan.
-# File name: propositions/syntax_test.py
-
 """Tests for the propositions.syntax module."""
 
 from logic_utils import frozendict
@@ -128,25 +123,6 @@ def test_parse(debug=False):
         ff = Formula.parse(s)
         assert type(ff) is Formula
         assert str(ff) == f
-
-# Tests for optional tasks in Chapter 1
-
-def test_polish(debug=False):
-    if debug:
-        print("Testing polish of formula 'x12'")
-    assert Formula('x12').polish() == 'x12'
-    if debug:
-        print("Testing polish of formula '|pp' (in infix: '(p|p)')")
-    assert Formula('|', Formula('p'), Formula('p')).polish() == '|pp'
-    if debug:
-        print("Testing polish of formula '~&pq7' (in infix: '~(p&q7)')")
-    assert Formula('~', Formula('&', Formula('p'), Formula('q7'))).polish() == '~&pq7'
-
-def test_parse_polish(debug=False):
-    for polish in ['p', '~x12', '&xy', '~~|x~T', '|&x1~x2F']:
-        if debug:
-            print("Testing polish parsing of formula", polish)
-        assert Formula.parse_polish(polish).polish() == polish
 
 # Tests for Chapter 3
 
@@ -319,10 +295,7 @@ def test_ex1(debug=False):
     test_parse_prefix(debug)
     test_is_formula(debug)
     test_parse(debug)
-    
-def test_ex1_opt(debug=False):
-    test_polish(debug)
-    test_parse_polish(debug)
+
 
 def test_ex3(debug=False):
     assert is_binary('+'), "Change is_binary() before testing Chapter 3 tasks."
@@ -337,5 +310,4 @@ def test_ex3(debug=False):
 
 def test_all(debug=False):
     test_ex1(debug)
-    test_ex1_opt(debug)
     test_ex3(debug) 

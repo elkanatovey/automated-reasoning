@@ -1,15 +1,9 @@
-# (c) This file is part of the course
-# Mathematical Logic through Programming
-# by Gonczarowski and Nisan.
-# File name: propositions/semantics_test.py
-
 """Tests for the propositions.semantics module."""
 
 from logic_utils import frozendict
 
 from propositions.syntax import *
 from propositions.semantics import *
-from propositions.axiomatic_systems import *
 
 def test_evaluate(debug=False):
     infix1 = '~(p&q7)'
@@ -306,69 +300,6 @@ def is_DNF(formula):
            (formula.root == '|' and is_DNF(formula.first) and
             is_DNF(formula.second))
 
-def test_evaluate_inference(debug=False):
-    from propositions.proofs import InferenceRule
-
-    # Test 1
-    rule1 = InferenceRule([Formula.parse('p'), Formula.parse('q')],
-                          Formula.parse('r'))
-    for model in all_models(['p', 'q', 'r']):
-        if debug:
-            print('Testing evaluation of inference rule', rule1, 'in model',
-                  model)
-        assert evaluate_inference(rule1, frozendict(model)) == \
-               (not model['p']) or (not model['q']) or model['r']
-
-    # Test 2
-    rule2 = InferenceRule([Formula.parse('(x|y)')],
-                          Formula.parse('x'))
-    for model in all_models(['x', 'y']):
-        if debug:
-            print('Testing evaluation of inference rule', rule2, 'in model',
-                  model)
-        assert evaluate_inference(rule2, frozendict(model)) == \
-               (not model['y']) or model['x']
-
-    # Test 3
-    rule3 = InferenceRule([Formula.parse(s) for s in ['(p->q)', '(q->r)']],
-                           Formula.parse('r'))
-    for model in all_models(['p', 'q', 'r']):
-        if debug:
-            print('Testing evaluation of inference rule', rule3, 'in model',
-                  model)
-        assert evaluate_inference(rule3, frozendict(model)) == \
-               (model['p'] and not model['q']) or \
-               (model['q'] and not model['r']) or model['r']
-
-def test_is_sound_inference(debug=False):
-    from propositions.proofs import InferenceRule
-
-    for assumptions,conclusion,tautological in [
-            [[], '(~p|p)', True],
-            [[], '(p|p)', False],
-            [[], '(~p|q)', False],
-            [['(~p|q)', 'p'], 'q', True],
-            [['(p|q)', 'p'], 'q', False],
-            [['(p|q)', '(~p|r)'], '(q|r)', True],
-            [['(p->q)', '(q->r)'], 'r', False],
-            [['(p->q)', '(q->r)'], '(p->r)', True],
-            [['(x|y)'], '(y|x)', True],
-            [['x'], '(x|y)', True],
-            [['(x&y)'], 'x', True],
-            [['x'], '(x&y)', False]]:
-        rule = InferenceRule(
-            [Formula.parse(assumption) for assumption in assumptions],
-            Formula.parse(conclusion))
-        if debug:
-            print('Testing whether', rule, 'is sound')
-        assert is_sound_inference(rule) == tautological
-
-    for rule in [MP, I0, I1, D, I2, N, NI, NN, R,
-                 A, NA1, NA2, O1, O2, NO, T, NF,
-                 N_ALTERNATIVE, AE1, AE2, OE]:
-        if debug:
-            print('Testing that', rule, 'is sound')
-        assert is_sound_inference(rule)
 
 def test_evaluate_all_operators(debug=False):
     infix1 = '(p+q7)'
@@ -424,11 +355,7 @@ def test_ex3(debug=False):
     test_evaluate_all_operators(debug)
     test_is_tautology_all_operators(debug)
 
-def test_ex4(debug=False):
-    test_evaluate_inference(debug)
-    test_is_sound_inference(debug)
     
 def test_all(debug=False):
     test_ex2(debug)
     test_ex3(debug)
-    test_ex4(debug)

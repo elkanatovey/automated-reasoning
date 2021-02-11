@@ -1,8 +1,3 @@
-# (c) This file is part of the course
-# Mathematical Logic through Programming
-# by Gonczarowski and Nisan.
-# File name: propositions/operators.py
-
 """Syntactic conversion of propositional formulae to use only specific sets of
 operators."""
 

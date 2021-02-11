@@ -1,9 +1,4 @@
-# (c) This file is part of the course
-# Mathematical Logic through Programming
-# by Gonczarowski and Nisan.
-# File name: test_ex2.py
-
-"""Tests all Chapter 2 tasks."""
+"""Tests all semantic tasks."""
 
 from propositions.semantics_test import *
 

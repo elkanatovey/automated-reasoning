@@ -1,14 +1,9 @@
-# (c) This file is part of the course
-# Mathematical Logic through Programming
-# by Gonczarowski and Nisan.
-# File name: propositions/semantics.py
-
-"""Semantic analysis of propositional-logic constructs."""
+""""Semantic analysis of propositional-logic constructs."""
 import itertools
 from typing import AbstractSet, Iterable, Iterator, List, Mapping
 
 from propositions.syntax import *
-from propositions.proofs import *
+
 
 Model = Mapping[str, bool]
 
@@ -324,44 +319,3 @@ def synthesize(variables: List[str], values: Iterable[bool]) -> Formula:
     dnf_string = dnf_string[:-len(most_recent_formula)-2] + \
                  most_recent_formula + count*')'
     return Formula.parse_prefix(dnf_string)[0]
-
-
-# Tasks for Chapter 4
-
-def evaluate_inference(rule: InferenceRule, model: Model) -> bool:
-    """Checks if the given inference rule holds in the given model.
-
-    Parameters:
-        rule: inference rule to check.
-        model: model to check in.
-
-    Returns:
-        ``True`` if the given inference rule holds in the given model, ``False``
-        otherwise.
-    """
-    assert is_model(model)
-    # Task 4.2
-    inference_not_needed = evaluate(rule.conclusion, model)
-    if inference_not_needed: # evaluates to true
-        return True
-    for f in rule.assumptions:
-        if not evaluate(f, model):
-            return True
-    return False
-
-def is_sound_inference(rule: InferenceRule) -> bool:
-    """Checks if the given inference rule is sound, i.e., whether its
-    conclusion is a semantically correct implication of its assumptions.
-
-    Parameters:
-        rule: inference rule to check.
-
-    Returns:
-        ``True`` if the given inference rule is sound, ``False`` otherwise.
-    """
-    # Task 4.3
-    models = all_models(list(rule.variables()))
-    for model in models:
-        if not evaluate_inference(rule, model):
-            return False
-    return True

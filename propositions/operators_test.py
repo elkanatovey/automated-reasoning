@@ -1,8 +1,3 @@
-# (c) This file is part of the course
-# Mathematical Logic through Programming
-# by Gonczarowski and Nisan.
-# File name: propositions/operators_test.py
-
 """Tests for the propositions.operators module."""
 
 from propositions.syntax import *

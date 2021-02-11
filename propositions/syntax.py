@@ -1,8 +1,3 @@
-# (c) This file is part of the course
-# Mathematical Logic through Programming
-# by Gonczarowski and Nisan.
-# File name: propositions/syntax.py
-
 """Syntactic handling of propositional formulae."""
 
 from __future__ import annotations
@@ -283,28 +278,6 @@ class Formula:
         assert Formula.is_formula(s)
         # Task 1.6
         return Formula.parse_prefix(s)[0]
-
-# Optional tasks for Chapter 1
-
-    def polish(self) -> str:
-        """Computes the polish notation representation of the current formula.
-
-        Returns:
-            The polish notation representation of the current formula.
-        """
-        # Optional Task 1.7
-
-    @staticmethod
-    def parse_polish(s: str) -> Formula:
-        """Parses the given polish notation representation into a formula.
-
-        Parameters:
-            s: string to parse.
-
-        Returns:
-            A formula whose polish notation representation is the given string.
-        """
-        # Optional Task 1.8
 
 # Tasks for Chapter 3
 
