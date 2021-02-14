@@ -166,6 +166,27 @@ class Formula:
             atomics.add(self.root)
         return atomics
 
+    def negation_childrens(self) -> Set[str]:
+        """Search for children of negations -
+             if it's not a variable or a constant, return it.
+
+        Returns:
+            A set of children of negations that are not a variable or a constant
+        """
+        # Task 1.3
+        bad_childrens = set()
+        if hasattr(self, 'second'):
+            bad_childrens = bad_childrens.union(self.second.negation_childrens())
+            bad_childrens = bad_childrens.union(self.first.negation_childrens())
+        elif hasattr(self, 'first'):
+            if is_variable(self.first.root):
+                return bad_childrens
+            elif is_constant(self.first.root):
+                return bad_childrens
+            else:
+                bad_childrens.add(self.first.root)
+        return bad_childrens
+
     @staticmethod
     def parse_prefix(s: str) -> Tuple[Union[Formula, None], str]:
         """Parses a prefix of the given string into a formula.

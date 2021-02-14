@@ -4,10 +4,17 @@ from propositions.syntax import *
 from propositions.semantics import *
 from propositions.operators import *
 
+
 many_fs = ['F', 'T', 'r', '~x', '(x+y)', '(x<->y)', '(x-&y)', '(x-|y)', '(x|y)',
            '(x->y)', '(x&y)', '(x&x)', '(p&q)', '(x|(y&z))', '~(~x|~(y|z))',
            '((p1|~p2)|~(p3|~~p4))', '((x+y)<->(~x+~y))',
            '((x-|~y)&(~F->(z<->T)))', '~~~~F']
+
+
+nnf_fs = ['F', 'T', 'r', '~x', '(x&y)', '(x<->y)', '(x&y)', '(x|y)', '(x|y)',
+           '(x->y)', '(x&y)', '(x&x)', '(p&q)', '(x|(y&z))', '~(~x|~(y|z))','((p1|~p2)|~(p3|~~p4))',
+            '((x&y)<->(~x&~y))', '((x|~y)&(~F->(z<->T)))', '~~~~F', '(~~x&~(x&y))']
+
 
 def test_operators_defined(debug=False):
     if debug:
@@ -77,6 +84,51 @@ def test_to_implies_false(debug=False):
         ff = to_implies_false(f)
         assert ff.operators().issubset({'->', 'F'}), \
                str(ff) + ' contains wrong operators'
+        assert is_tautology(Formula('<->', f, ff))
+
+def test_to_tseitin_step1():
+    for f in many_fs:
+        f = Formula.parse(f)
+        # ff = to_tseitin_step1(f)
+        ff= to_NNF_eliminate_IFF_and_IF(f)
+        print(f, "    ", ff)
+
+def test_to_NNF(debug = False):
+    if debug:
+        print()
+    for f in nnf_fs:
+        if debug:
+            print('Testing conversion of', f,
+                  "to an NNF formula")
+        f = Formula.parse(f)
+        ff = to_NNF(f)
+        print(f , "        ", ff)
+        assert is_tautology(Formula('<->', f, ff))
+
+def test_to_NNF_eliminate_IFF_and_IF(debug = False):
+    if debug:
+        print()
+    for f in nnf_fs:
+        if debug:
+            print('Testing conversion of', f,
+                  "to a formula without <-> and ->.")
+        f = Formula.parse(f)
+        ff = (f)
+        assert ff.operators().issubset({'&', '~', '|', 'T', 'F'}), \
+            str(ff) + ' contains wrong operators'
+        assert is_tautology(Formula('<->', f, ff))
+
+
+def test_to_NNF_push_negations(debug=False):
+    if debug:
+        print()
+    for f in nnf_fs:
+        if debug:
+            print('Testing conversion of', f,
+                  "to a formula after De Morgan laws")
+        f = Formula.parse(f)
+        ff = to_NNF_push_negations(f)
+        assert ff.negation_childrens() == set()
         assert is_tautology(Formula('<->', f, ff))
 
 def test_ex3(debug=False):

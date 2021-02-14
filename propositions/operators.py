@@ -90,11 +90,70 @@ def to_implies_false(formula: Formula) -> Formula:
     Return:
         A formula that has the same truth table as the given formula, but
         contains no constants or operators beyond ``'->'`` and ``'F'``.
+
     """
     # Task 3.6d
     f = to_implies_not(formula)
     return f.substitute_operators({'~': Formula.parse_prefix('(p->F)')[0]})
 
+def to_NNF(formula: Formula) -> Formula:
+    '''
+    return formula in NNF form
+    :param formula:
+    :return: formula in NNF form
+    '''
+    return to_NNF_push_negations(to_NNF_eliminate_IFF_and_IF(formula))
+
+def to_NNF_eliminate_IFF_and_IF(formula: Formula) -> Formula:
+    '''
+    Eliminate <-> and -> by:
+    a<->b   -->   (a->b)&(b->a)
+    a->b   -->   ~a|b
+    :param formula:
+    :return:
+    '''
+    return formula.substitute_operators(
+        {
+         '->': Formula.parse_prefix('~(p&~q)')[0],
+         '<->': Formula.parse_prefix('((p&q)|(~p&~q))')[0]
+        })
+
+def to_NNF_push_negations(formula: Formula) -> Formula:
+    '''
+        De Morgan Laws - push negation into clause:
+        ~(a&b)  ->  ~a|~b
+        ~(a|b)  ->  ~a&~b
+        :param formula: formula
+        :return: The formula after performing on it De Morgan laws
+
+        ~(~a|b) - >
+    '''
+    # base case
+    if is_variable(formula.root) or is_constant(formula.root):
+        return formula
+
+    if is_unary(formula.root):
+        child = formula.first
+        if is_variable(child.root):
+            return formula
+        elif is_constant(child.root):
+            if child.root == 'T':
+                return Formula('F')
+            else:
+                return Formula('T')
+        elif is_unary(child.root):
+            return to_NNF_push_negations(child.first)
+
+        else:   #   case: ~(a&b) - child is binary
+            l_part = Formula('~', to_NNF_push_negations(child.first))
+            r_part = Formula('~', to_NNF_push_negations(child.second))
+            if(child.root == '|'):
+                return Formula('&', to_NNF_push_negations(l_part), to_NNF_push_negations(r_part))
+            elif(child.root == '&'):
+                return Formula('|', to_NNF_push_negations(l_part), to_NNF_push_negations(r_part))
+
+    # case binary
+    return Formula(formula.root, to_NNF_push_negations(formula.first), to_NNF_push_negations(formula.second))
 
 def to_tseitin_step1(formula: Formula) -> list:
     """ return a list of all subformulas reformulated as iff tseitin reps
@@ -128,7 +187,7 @@ def to_tseitin_step1(formula: Formula) -> list:
         else:
             l_rep = l_child_tseitin[0].first
 
-        if len(l_child_tseitin) is 0:
+        if len(r_child_tseitin) is 0:
             r_rep = formula.second
         else:
             r_rep = r_child_tseitin[0].first
