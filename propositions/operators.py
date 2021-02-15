@@ -155,6 +155,55 @@ def to_NNF_push_negations(formula: Formula) -> Formula:
     # case binary
     return Formula(formula.root, to_NNF_push_negations(formula.first), to_NNF_push_negations(formula.second))
 
+
+def NNF_to_CNF(formula: Formula) -> Formula:
+    '''
+
+    :param formula: an NNF formula
+    :return:
+    '''
+    # base/unary case
+    if is_variable(formula.root) or is_constant(formula.root) or is_unary(formula.root):
+        return formula
+
+    if formula.root == '|':
+        child_l = NNF_to_CNF(formula.first)
+        child_r = NNF_to_CNF(formula.second)
+        if child_l.root == '&' and child_r.root == '&':
+            a = NNF_to_CNF(child_l.first)
+            b = NNF_to_CNF(child_l.second)
+            c = NNF_to_CNF(child_r.first)
+            d = NNF_to_CNF(child_r.second)
+            ac = NNF_to_CNF(Formula('|', a, c))
+            ad = NNF_to_CNF(Formula('|', a, d))
+            bc = NNF_to_CNF(Formula('|', b, c))
+            bd = NNF_to_CNF(Formula('|', b, d))
+            left = Formula('&', ac, ad)
+            right = Formula('&', bc,bd)
+            return Formula('&', left, right)
+        elif child_l.root == '&':
+            a = NNF_to_CNF(child_l.first)
+            b = NNF_to_CNF(child_l.second)
+            c = child_r
+            left = NNF_to_CNF(Formula('|', a, c))
+            right = NNF_to_CNF(Formula('|', b, c))
+            return Formula('&', left, right)
+        elif child_r.root == '&':
+            a = NNF_to_CNF(child_r.first)
+            b = NNF_to_CNF(child_r.second)
+            c = child_l
+            left = NNF_to_CNF(Formula('|', a, c))
+            right = NNF_to_CNF(Formula('|', b, c))
+            return Formula('&', left, right)
+        else:
+            return Formula('|', child_l, child_r)
+
+    elif formula.root == '&':
+        return Formula('&', NNF_to_CNF(formula.first), NNF_to_CNF(formula.second))
+    else:
+        assert False
+
+
 def to_tseitin_step1(formula: Formula) -> list:
     """ return a list of all subformulas reformulated as iff tseitin reps
     """
@@ -201,9 +250,12 @@ def to_tseitin_step1(formula: Formula) -> list:
         return representatives
 
 
-# def to_tseitin_step2(formula: Formula) -> Formula:
-#     """return full tseitin formula before cnf"""
-#     formula_list = to_tseitin_step1(formula)
-#
-#     for i in range(len(formula_list), 0):
-#         current_f = Formula('&',)
+def to_tseitin_step2(formulas_list: list) -> Formula:
+    """return full tseitin formula before cnf"""
+    if(len(formulas_list)==0):
+        return None
+    formula = formulas_list[0].first
+    for i in range(len(formulas_list)):
+        formula = Formula('&', formula,  NNF_to_CNF(to_NNF(formulas_list[i])))
+    return formula
+

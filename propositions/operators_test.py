@@ -11,9 +11,9 @@ many_fs = ['F', 'T', 'r', '~x', '(x+y)', '(x<->y)', '(x-&y)', '(x-|y)', '(x|y)',
            '((x-|~y)&(~F->(z<->T)))', '~~~~F']
 
 
-nnf_fs = ['F', 'T', 'r', '~x', '(x&y)', '(x<->y)', '(x&y)', '(x|y)', '(x|y)',
+nnf_fs = ['F', 'T', 'r', '~x', '(x&y)', '(x<->y)', '(x&y)','(x|y)', '(x|y)',
            '(x->y)', '(x&y)', '(x&x)', '(p&q)', '(x|(y&z))', '~(~x|~(y|z))','((p1|~p2)|~(p3|~~p4))',
-            '((x&y)<->(~x&~y))', '((x|~y)&(~F->(z<->T)))', '~~~~F', '(~~x&~(x&y))']
+            '((x&y)<->(~x&~y))', '((x|~y)&(~F->(z<->T)))', '~~~~F', '(~~x&~(x&y))', '((~p|~q)&x)']
 
 
 def test_operators_defined(debug=False):
@@ -86,12 +86,26 @@ def test_to_implies_false(debug=False):
                str(ff) + ' contains wrong operators'
         assert is_tautology(Formula('<->', f, ff))
 
-def test_to_tseitin_step1():
-    for f in many_fs:
+def test_to_tseitin_step2():
+    for f in nnf_fs:
         f = Formula.parse(f)
-        # ff = to_tseitin_step1(f)
-        ff= to_NNF_eliminate_IFF_and_IF(f)
+        f_list = to_tseitin_step1(f)
+        ff = to_tseitin_step2(f_list)
+        print(f, "    ", f_list, "       ", ff)
+
+def test_to_tseitin_step1():
+    for f in nnf_fs:
+        f = Formula.parse(f)
+        ff = to_tseitin_step1(f)
         print(f, "    ", ff)
+
+def test_to_NNF_to_CNF():
+    for f in nnf_fs:
+        f = Formula.parse(f)
+        ff = to_NNF(f)
+        fff = NNF_to_CNF(ff)
+        print()
+        print(f, "    ", fff)
 
 def test_to_NNF(debug = False):
     if debug:
