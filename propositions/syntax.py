@@ -148,6 +148,47 @@ class Formula:
             atomics.add(self.root)
         return atomics
 
+    def pos_literals_consts(self) -> Set[str]:
+        """Finds all nonnegated consts and variables in the current clasue. - assumes that
+        there are no ands in formula.
+
+        Returns:
+            A set of all nonnegated consts and variables used in the current formula.
+        """
+        assert self.operators().issubset({'~', '|', 'T', 'F'})
+        atomics = set()
+        if hasattr(self, 'second'):
+            atomics = (self.first.pos_literals_consts() | self.second.pos_literals_consts())
+            return atomics
+        if hasattr(self, 'first'):
+            return atomics
+        if is_variable(self.root):
+            atomics.add(self.root)
+        if is_constant(self.root):
+            atomics.add(self.root)
+        return atomics
+
+    def negated_literals_consts(self) -> Set[str]:
+        """Finds all negated consts and variables in the current clause - assumes that
+        there are no ands in formula.
+
+        Returns:
+            A set of all negated consts and variables used in the current formula.
+        """
+        assert self.operators().issubset({'~', '|', 'T', 'F'})
+        atomics = set()
+        if is_variable(self.root):
+            return atomics
+        if is_constant(self.root):
+            return atomics
+
+        if hasattr(self, 'second'):
+            atomics = (self.first.negated_literals_consts() | self.second.negated_literals_consts())
+            return atomics
+        if hasattr(self, 'first'):
+            atomics.add(self.first.root)
+        return atomics
+
     def operators(self) -> Set[str]:
         """Finds all operators in the current formula.
 
@@ -377,3 +418,21 @@ class Formula:
         if self.root in substitution_map:
             return substitution_map[self.root]
         return self
+
+
+    def verify_and_not_child_of_or(self, parent: str) -> bool:
+        """verify that and is not child of or in formula's tree. Assumes that unary
+        ops are pushed down the parse tree
+        """
+        if hasattr(self, 'second'):
+            if parent == '|':
+                if self.root == '&':
+                    return False
+                left = self.first.verify_and_not_child_of_or('|')
+                right = self.second.verify_and_not_child_of_or('|')
+                return left and right
+            else:
+                left = self.first.verify_and_not_child_of_or(self.first.root)
+                right = self.second.verify_and_not_child_of_or(self.second.root)
+                return left and right
+        return True

@@ -156,6 +156,88 @@ def to_NNF_push_negations(formula: Formula) -> Formula:
     return Formula(formula.root, to_NNF_push_negations(formula.first), to_NNF_push_negations(formula.second))
 
 
+def create_negs(formulas: list) -> Union[Formula, None]:
+    "create disjunction of negation of literals in sent list - if empty return T"
+    if len(formulas) == 0:
+        return None
+    f = Formula('~', Formula(formulas[0]))
+
+    for i in range(1, len(formulas)):
+        ff = Formula('~', Formula(formulas[i]))
+        f = Formula('|', f, ff)
+    return f
+
+
+def create_pos(formulas: list) -> Union[Formula, None]:
+    "create disjunction of literals in sent list - if empty return T"
+    if len(formulas) == 0:
+        return None
+    if len(formulas) > 1 and formulas[0] == 'F':
+        formulas.pop(0)
+    f = Formula(formulas[0])
+
+    for i in range(1, len(formulas)):
+        if formulas[i] == 'F':
+            continue
+        ff = Formula(formulas[i])
+        f = Formula('|', f, ff)
+    return f
+
+
+def preprocess_clauses(formula: Formula) -> Formula:
+    if is_binary(formula.root):
+
+        if formula.root == '&':
+            l = preprocess_clauses(formula.first)
+            r = preprocess_clauses(formula.second)
+            if l.root == 'T' or r.root == 'F':
+                return r
+            if r.root == 'T' or l.root == 'F':
+                return l
+            processed_f = Formula('&', l, r)
+            return processed_f
+
+        # or case
+        else:
+            l_negs = formula.first.negated_literals_consts()
+            l_pos = formula.first.pos_literals_consts()
+
+            r_negs = formula.second.negated_literals_consts()
+            r_pos = formula.second.pos_literals_consts()
+
+            negs = l_negs | r_negs
+            pos = l_pos | r_pos
+
+            # nonempty intersection means trivial clause
+            if negs.intersection(pos):
+                return Formula('T')
+            if 'F' in negs or 'T' in pos:
+                return Formula('T')
+
+            if 'T' in negs:
+                negs.discard('T')
+                pos.add('F')
+
+            neg_conjunction = create_negs(list(negs))
+            pos_conjunction = create_pos(list(pos))
+
+            if neg_conjunction is None and pos_conjunction is None:
+                return Formula('F')
+            if neg_conjunction is None:
+                return pos_conjunction
+            if pos_conjunction is None:
+                return neg_conjunction
+            if pos_conjunction.root == 'F':
+                return neg_conjunction
+
+            return Formula('|', pos_conjunction, neg_conjunction)
+
+    return formula
+
+
+
+
+
 def NNF_to_CNF(formula: Formula) -> Formula:
     '''
 
@@ -178,6 +260,7 @@ def NNF_to_CNF(formula: Formula) -> Formula:
             ad = NNF_to_CNF(Formula('|', a, d))
             bc = NNF_to_CNF(Formula('|', b, c))
             bd = NNF_to_CNF(Formula('|', b, d))
+
             left = Formula('&', ac, ad)
             right = Formula('&', bc,bd)
             return Formula('&', left, right)
@@ -187,6 +270,8 @@ def NNF_to_CNF(formula: Formula) -> Formula:
             c = child_r
             left = NNF_to_CNF(Formula('|', a, c))
             right = NNF_to_CNF(Formula('|', b, c))
+
+
             return Formula('&', left, right)
         elif child_r.root == '&':
             a = NNF_to_CNF(child_r.first)
@@ -194,6 +279,7 @@ def NNF_to_CNF(formula: Formula) -> Formula:
             c = child_l
             left = NNF_to_CNF(Formula('|', a, c))
             right = NNF_to_CNF(Formula('|', b, c))
+
             return Formula('&', left, right)
         else:
             return Formula('|', child_l, child_r)
@@ -217,7 +303,7 @@ def to_tseitin_step1(formula: Formula) -> list:
     if is_unary(formula.root):
         child_tseitin = to_tseitin_step1(formula.first)
 
-        if len(child_tseitin) is 0:
+        if len(child_tseitin) == 0:
             new_representative = Formula('<->', Formula(current_z), formula)  #z<->~q
             representatives.append(new_representative)
             return representatives
@@ -231,12 +317,12 @@ def to_tseitin_step1(formula: Formula) -> list:
         l_child_tseitin = to_tseitin_step1(formula.first)
         r_child_tseitin = to_tseitin_step1(formula.second)
 
-        if len(l_child_tseitin) is 0:
+        if len(l_child_tseitin) == 0:
             l_rep = formula.first
         else:
             l_rep = l_child_tseitin[0].first
 
-        if len(r_child_tseitin) is 0:
+        if len(r_child_tseitin) == 0:
             r_rep = formula.second
         else:
             r_rep = r_child_tseitin[0].first
@@ -251,7 +337,7 @@ def to_tseitin_step1(formula: Formula) -> list:
 
 
 def to_tseitin_step2(formulas_list: list) -> Formula:
-    """return full tseitin formula before cnf"""
+    """return full tseitin formula before cnf, if literal returns none"""
     if(len(formulas_list)==0):
         return None
     formula = formulas_list[0].first
@@ -259,3 +345,9 @@ def to_tseitin_step2(formulas_list: list) -> Formula:
         formula = Formula('&', formula,  NNF_to_CNF(to_NNF(formulas_list[i])))
     return formula
 
+
+def to_tseitin(formula: Formula) -> Formula:
+    """ receive formula, return tseitin transformation of formula before preproccessing"""
+    f_list = to_tseitin_step1(formula)
+    f = to_tseitin_step2(f_list)
+    return f
