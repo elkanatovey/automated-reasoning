@@ -251,7 +251,7 @@ def to_tseitin_step1(formula: Formula) -> list:
 
 
 def to_tseitin_step2(formulas_list: list) -> Formula:
-    """return full tseitin formula before cnf"""
+    """return full tseitin formula before cnf, if literal returns none"""
     if(len(formulas_list)==0):
         return None
     formula = formulas_list[0].first
