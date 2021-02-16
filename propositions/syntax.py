@@ -377,3 +377,21 @@ class Formula:
         if self.root in substitution_map:
             return substitution_map[self.root]
         return self
+
+
+    def verify_and_not_child_of_or(self, parent: str) -> bool:
+        """verify that and is not child of or in formula's tree. Assumes that unary
+        ops are pushed down the parse tree
+        """
+        if hasattr(self, 'second'):
+            if parent == '|':
+                if self.root == '&':
+                    return False
+                left = self.first.verify_and_not_child_of_or('|')
+                right = self.second.verify_and_not_child_of_or('|')
+                return left and right
+            else:
+                left = self.first.verify_and_not_child_of_or(self.first.root)
+                right = self.second.verify_and_not_child_of_or(self.second.root)
+                return left and right
+        return True
