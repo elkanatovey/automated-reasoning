@@ -217,7 +217,7 @@ def to_tseitin_step1(formula: Formula) -> list:
     if is_unary(formula.root):
         child_tseitin = to_tseitin_step1(formula.first)
 
-        if len(child_tseitin) is 0:
+        if len(child_tseitin) == 0:
             new_representative = Formula('<->', Formula(current_z), formula)  #z<->~q
             representatives.append(new_representative)
             return representatives
@@ -231,12 +231,12 @@ def to_tseitin_step1(formula: Formula) -> list:
         l_child_tseitin = to_tseitin_step1(formula.first)
         r_child_tseitin = to_tseitin_step1(formula.second)
 
-        if len(l_child_tseitin) is 0:
+        if len(l_child_tseitin) == 0:
             l_rep = formula.first
         else:
             l_rep = l_child_tseitin[0].first
 
-        if len(r_child_tseitin) is 0:
+        if len(r_child_tseitin) == 0:
             r_rep = formula.second
         else:
             r_rep = r_child_tseitin[0].first
