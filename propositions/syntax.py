@@ -1,7 +1,7 @@
 """Syntactic handling of propositional formulae."""
 
 from __future__ import annotations
-from typing import Mapping, Optional, Set, Tuple, Union, List
+from typing import Mapping, Optional, Set, Tuple, Union, List, MutableMapping
 
 from logic_utils import frozen
 

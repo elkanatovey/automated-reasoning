@@ -1,7 +1,9 @@
 from propositions.syntax import Formula as propositional_Formula
 import propositions.operators as propositional_operators
 import propositions.semantics as propositional_semantics
-
+from propositions.sat_solver import Sat_Solver
+SAT_MSG = "SAT "
+UNSAT_MSG = "UNSAT "
 def run_sat_solver(formula: str):
     f_prop = propositional_Formula.parse(formula)
 
@@ -9,19 +11,24 @@ def run_sat_solver(formula: str):
     f_tseitin = propositional_operators.to_tseitin(f_prop)
     f_tseitin_processed = propositional_operators.preprocess_clauses(f_tseitin)
     if f_tseitin_processed.root == 'F':
-        return "UNSAT"
+        return UNSAT_MSG, None
     elif f_tseitin_processed.root == 'T':
         variables = f_prop.variables()
         if variables == set():
-            return "Trivially SAT"
+            return SAT_MSG, "Trivial"
         else:
             model = next(propositional_semantics.all_models(list(variables)))
-            return "SAT " + str(model)
+            return SAT_MSG, str(model)
 
-    f_solver = propositional_Formula.get_clauses(f_tseitin_processed)
+    # deduction steps
+    return run_sat_cnf(str(f_tseitin_processed))
 
 
+def run_sat_cnf(formula: str):
+    f_prop = propositional_Formula.parse(formula)
+    to_solve = Sat_Solver(f_prop)
 
+    return to_solve.start_sat()
     # deduction steps
 
 
