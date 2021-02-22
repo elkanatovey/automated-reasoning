@@ -12,8 +12,8 @@ class Sat_Solver:
 
     def __init__(self, cnf_formula: Formula):
         self.formula = cnf_formula
-        self.wv_db = WatchVariableDb()
         self.variables = cnf_formula.variables()
+        self.wv_db = WatchVariableDb(self.variables)
         self.VSIDS_dict = {}
         for variable in self.variables:
             self.VSIDS_dict[variable] = 0
@@ -78,18 +78,13 @@ class Sat_Solver:
                 l1 = self.propagate_l0(wv)
                 if l1 is False:
                     return UNSAT_MSG, None
-                flag = True
-                for key in self.assignment_dict:
-                    if self.assignment_dict[key] is None:
-                        flag = False
-                        break
-                if flag:
-                    return SAT_MSG, self.assignment_dict
 
             elif self.assignment_dict[wv] == clause.is_positive_variable(wv):
                 continue
             else:
                 return UNSAT_MSG, None
+
+        return True, None
 
     def propagate_l0(self, unit_variable: str): # x,y (~x|~y)
         illegal_setting = not self.assignment_dict[unit_variable]
@@ -112,30 +107,51 @@ class Sat_Solver:
         return True
 
     def decide(self):
+        """decide new var,
+        -return decision variable if found
+        -else; return sat with assignments
+        """
         self.level += 1
         self.li_unit_clauses[self.level] = []
         decision_variable = self.__largest_available_vsids_member()
-        decision = random.sample([True, False], 1)[0]
+        if decision_variable is True:
+            return SAT_MSG, self.assignment_dict
+        if self.wv_db.positive_len(decision_variable) > self.wv_db.negative_len(decision_variable):
+            decision = True
+        else:
+            decision = False
 
         # update relevant dbs
         self.assignment_dict[decision_variable] = decision
         self.update_graph(decision_variable)
         self.decision_level_history[self.level] = DecisionLevel(decision_variable)
 
-        return decision_variable
+        return decision_variable, None
 
     def propagate(self, unit_variable: str):
-        conflict_clause = self.propagate_s1_s3(unit_variable)
-        if conflict_clause is not True:
-            conflict_clause = self.get_conflict_clause(conflict_clause)
-            conflict_clause, backjump_level = self.second_highest_node_level(conflict_clause)
-            return conflict_clause, backjump_level
+        """:returns
+        - True, None if propagated successfully,
+        - conflict clause, backjump level if ran into conflict
 
-        conflict_clause = self.propagate_s2()
-        if conflict_clause is not True:
-            conflict_clause = self.get_conflict_clause(conflict_clause)
-            conflict_clause, backjump_level = self.second_highest_node_level(conflict_clause)
-            return conflict_clause, backjump_level
+        """
+
+        # restarted l0
+        if self.level == 0:
+            return self.start_sat()
+
+        # all other levels
+        else:
+            conflict_clause = self.propagate_s1_s3(unit_variable)
+            if conflict_clause is not True:
+                conflict_clause = self.get_conflict_clause(conflict_clause)
+                conflict_clause, backjump_level = self.second_highest_node_level(conflict_clause)
+                return conflict_clause, backjump_level
+
+            conflict_clause = self.propagate_s2()
+            if conflict_clause is not True:
+                conflict_clause = self.get_conflict_clause(conflict_clause)
+                conflict_clause, backjump_level = self.second_highest_node_level(conflict_clause)
+                return conflict_clause, backjump_level
 
         return True, None
 
@@ -187,10 +203,12 @@ class Sat_Solver:
         return True
 
     def get_conflict_clause(self, clause: Clause) -> Clause:
+        """resolve conflict clause until uip within then return new conflict clause"""
         uip = self.decision_level_history[self.level].find_first_uip(clause, self.nodes)
 
         last_assigned = self.decision_level_history[self.level].find_last_assigned_literal(clause)
         c_tag = self.nodes[last_assigned].get_parent_clause()
+        #@ todo deal with case where this returns none - meaning that we guessed wrong at decision level solution should be to backtracksomehow with inverted clause
         current = clause.resolve(c_tag)
 
         while uip not in current.get_variables():
@@ -200,14 +218,7 @@ class Sat_Solver:
 
         return current
 
-
-        ## self.li_unit_clauses = {} # {int: units}
-        # self.decision_level_history = {self.level: DecisionLevel('start')}
-        # self.nodes = dict((k, ImplicationNode(k, None)) for k in list(self.variables))
-        # self.assignment_dict = dict.fromkeys(list(self.variables), )
-        # self.level = 0
-
-    def backtrack(self, backtrack_level: int, conflict_clause: Clause):
+    def backtrack(self, conflict_clause: Clause, backtrack_level: int,):
         # add clause to wv db
         self.add_conflict_clause_to_db(conflict_clause)
 
@@ -279,12 +290,12 @@ class Sat_Solver:
 
 
     def __largest_available_vsids_member(self):
+        """return best key if remains, else return true"""
         max = -1
-        best_key = None
+        best_key = True
         for key in self.VSIDS_dict:
             if self.assignment_dict[key] is None:
                 if max < self.VSIDS_dict[key]:
                     best_key = key
                     max = self.VSIDS_dict[key]
-        assert best_key is not None # @todo maybe if key wasn't found, we've found good assignment?
         return best_key

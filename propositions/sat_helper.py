@@ -159,8 +159,10 @@ NEGATIVES = 1
 class WatchVariableDb:
     watch_variable_dict: {} #MutableMapping[str, WATCHED_CLAUSES]
 
-    def __init__(self) -> None:
+    def __init__(self, variables: set) -> None:
         self.watch_variable_dict = {}
+        for var in variables:
+            self.watch_variable_dict[var] = [[], []]
 
     def insert_clause_wv_to_wvdict(self, clause: Clause, wv: str):
         """insert clause-wv pair to dict, does not verify correctness or remove old wvs"""
@@ -189,6 +191,12 @@ class WatchVariableDb:
             bad_clauses = copy.deepcopy(self.watch_variable_dict[wv][NEGATIVES])
             self.watch_variable_dict[wv][NEGATIVES] = []
             return bad_clauses
+
+    def positive_len(self, var):
+        return len(self.watch_variable_dict[var][POSITIVES])
+
+    def negative_len(self, var):
+        return len(self.watch_variable_dict[var][NEGATIVES])
 
 
 class ImplicationNode:
