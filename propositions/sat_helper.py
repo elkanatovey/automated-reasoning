@@ -46,12 +46,13 @@ class Clause:
         return hash(str(self))
 
     def __repr__(self) -> str:
-        return str(sorted(self.positive_variables)) + "  " + str(sorted(self.negative_variables))
+        return str(sorted(self.positive_variables)) + "  " + "~" + str(sorted(self.negative_variables))
 
     def is_unit_clause(self) -> bool:
         if self.__is_unit_clause:
             return True
         return False
+
 
     def get_wv1(self):
         return self.first_wv
@@ -75,6 +76,28 @@ class Clause:
     def get_variables(self):
         variables = set(self.positive_variables).union(set(self.negative_variables))
         return variables
+
+    def resolve(self, other):
+        """resolve current clause with other clause
+        - returns new unified clause without conflicting literal
+        """
+        other_pos = set(other.positive_variables)
+        other_neg = set(other.negative_variables)
+
+        local_pos = set(self.negative_variables)
+        local_neg = set(self.negative_variables)
+
+        pos = other_pos | local_pos
+        neg = other_neg | local_neg
+        conflict_literal = pos & neg
+        assert len(conflict_literal) == 1
+        pos.difference_update(conflict_literal)
+        neg.difference_update(conflict_literal)
+        pos = list(pos)
+        neg = list(neg)
+        resolvent = Clause(tuple((pos, neg)))
+        return resolvent
+
 
     def find_legal_wv(self, wv_to_replace: str, assignment_dict: {}):
         """Assumes clause is not unit
@@ -191,6 +214,73 @@ class ImplicationNode:
 
     def __repr__(self):
         return str(self)
+
+    def get_parent_clause(self):
+        return self.clause
+
+    def all_paths_to_conflict_clause(self, conflict_variables: set):
+        """given set of conflict variables find all paths from current node to
+        conflict variables, if empty return []"""
+        if self.variable in conflict_variables:
+            return [[self.variable]]
+
+        all_paths = []
+        for child in self.children:
+            child_paths = child.all_paths_to_conflict_clause(conflict_variables)
+            for path in child_paths:
+                if path:
+                    all_paths.append([self.variable] + path)
+        return all_paths
+
+
+
+class DecisionLevel:
+    """
+    Represents history in a decision level. Each DecisionLevel contains
+    - its decision variable
+    - its implication children (list) in order of assignment
+    """
+    decision_variable: str
+    assignment_history: []
+
+    def __init__(self, variable: str):
+        self.decision_variable = variable
+        self.assignment_history = [self.decision_variable]
+
+    def __str__(self):
+        return "dvar: " + str(self.decision_variable) + " hist: " + str(self.assignment_history)
+
+    def __repr__(self):
+        return str(self)
+
+    def add_assignment(self, v: str):
+        self.assignment_history.append(v)
+
+    def find_last_assigned_literal(self, clause: Clause) -> str:
+        clause_vars = clause.get_variables()
+        for var in reversed(self.assignment_history):
+            if var in clause_vars:
+                return var
+        assert False
+
+    def find_first_uip(self, clause: Clause, nodes_dict: {}):
+        conflict_vars = clause.get_variables()
+        all_paths = nodes_dict[self.decision_variable].all_paths_to_conflict_clause(conflict_vars)
+
+        if len(all_paths) == 1:
+            return all_paths[0][-1] # single path, last lit  is uip
+
+        p1 = all_paths[0]
+        path_intersections = set(p1)
+        for path in all_paths:
+            path_intersections.intersection_update(set(path))
+
+        for ip in reversed(p1):
+            if ip in path_intersections:
+                return ip
+
+    def get_assignment_history(self):
+        return self.assignment_history
 
 
 VSIDS_DICT = MutableMapping[str, int]

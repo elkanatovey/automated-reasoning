@@ -28,8 +28,16 @@ def run_sat_cnf(formula: str):
     f_prop = propositional_Formula.parse(formula)
     to_solve = Sat_Solver(f_prop)
 
-    return to_solve.start_sat()
-    # deduction steps
+    msg = to_solve.start_sat()
+    if msg is not None:
+        return msg
+
+    while True:
+        decision_var = to_solve.decide()
+        conflict, msg = to_solve.propagate(decision_var)
+        #
+        # conflict, msg = to_solve.propagate_s2()
+
 
 
 
