@@ -93,6 +93,30 @@ def test_to_implies_false(debug=False):
         assert is_tautology(Formula('<->', f, ff))
 
 
+
+
+
+
+
+
+
+
+
+
+def test_generate_formula(debug=False):
+    if debug:
+        print()
+    for f in tseitin_fs_short:
+        f = Formula.parse(f)
+        ff = to_tseitin(f)
+        fff = preprocess_clauses(ff)
+        ffff = fff.get_clauses()
+        fffff = Formula.generate_formula(ffff)
+        assert is_tautology(Formula('<->', fff, fffff))
+        if debug:
+            print(ffff, "    ", ffff, "       ", fffff)
+
+
 def test_preprocess_clauses(debug=False):
     if debug:
         print()

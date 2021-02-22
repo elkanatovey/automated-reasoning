@@ -1,9 +1,12 @@
 """Syntactic handling of propositional formulae."""
 
 from __future__ import annotations
-from typing import Mapping, Optional, Set, Tuple, Union
+from typing import Mapping, Optional, Set, Tuple, Union, List, MutableMapping
 
 from logic_utils import frozen
+
+POS = 0
+NEG = 1
 
 def is_variable(s: str) -> bool:
     """Checks if the given string is an atomic proposition.
@@ -214,7 +217,6 @@ class Formula:
         Returns:
             A set of children of negations that are not a variable or a constant
         """
-        # Task 1.3
         bad_childrens = set()
         if hasattr(self, 'second'):
             bad_childrens = bad_childrens.union(self.second.negation_childrens())
@@ -436,3 +438,57 @@ class Formula:
                 right = self.second.verify_and_not_child_of_or(self.second.root)
                 return left and right
         return True
+
+    def get_clauses(self) -> List[Tuple[List[str], List[str]]]:
+        """For each CNF clause in formula return two lists: pos, neg where they respectively are the literals
+        and negated literals within the clause. """
+        individual_clauses = list()
+
+        if self.root == '&':
+            left = self.first.get_clauses()
+            right = self.second.get_clauses()
+            individual_clauses.extend(left)
+            individual_clauses.extend(right)
+            return individual_clauses
+
+        pos = self.pos_literals_consts()
+        negs = self.negated_literals_consts()
+        clause = tuple((list(pos), list(negs)))
+        individual_clauses.append(clause)
+        return individual_clauses
+
+    @staticmethod
+    def __generate_clause(clause_tuple: Tuple[List[str], List[str]]) -> Formula:
+        if len(clause_tuple[POS]) == 0 and len(clause_tuple[NEG]) == 0:
+            return Formula('F')
+
+        if len(clause_tuple[NEG]) != 0:
+            negs = clause_tuple[NEG]
+            fnn = Formula('~', Formula(negs[0]))
+            for i in range(1, len(negs)):
+                fn = Formula('~', Formula(negs[i]))
+                fnn = Formula('|', fnn, fn)
+            if len(clause_tuple[POS]) == 0:
+                return fnn
+
+        if len(clause_tuple[POS]) != 0:
+            pos = clause_tuple[POS]
+            fpp =  Formula(pos[0])
+            for i in range(1, len(pos)):
+                fp = Formula(pos[i])
+                fpp = Formula('|', fpp, fp)
+            if len(clause_tuple[NEG]) == 0:
+                return fpp
+
+        return Formula('|', fpp, fnn)
+
+    @staticmethod
+    def generate_formula(clause_list:  List[Tuple[List[str], List[str]]]) -> Formula:
+
+        if len(clause_list) == 0:
+            return Formula('T')
+
+        f = Formula.__generate_clause(clause_list[0])
+        for i in range(1, len(clause_list)):
+            f = Formula('&', f, Formula.__generate_clause(clause_list[i]))
+        return f
