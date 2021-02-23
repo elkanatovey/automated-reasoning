@@ -98,6 +98,24 @@ class Clause:
         resolvent = Clause(tuple((pos, neg)))
         return resolvent
 
+    def is_newly_unit(self, assignment_dict: {}, v: str): #@todo may be unnecessary
+        """helper function for
+        >>>self.find_legal_wv()
+         - check if new wv assignment is unit and return accordingly
+          - in unit case makes sure that unit wv is in first
+        """
+        if assignment_dict[v] is not None:
+            return [v, None]
+
+        if assignment_dict[self.first_wv] is None and assignment_dict[self.second_wv] is not None:
+            return [self.first_wv, True]
+        if assignment_dict[self.second_wv] is None and assignment_dict[self.first_wv] is not None:
+            var = self.get_wv2()
+            self.set_wv2(self.get_wv1())
+            self.set_wv1(var)
+            return [self.first_wv, True]
+        return [v, None]
+
 
     def find_legal_wv(self, wv_to_replace: str, assignment_dict: {}):
         """Assumes clause is not unit
@@ -114,7 +132,7 @@ class Clause:
                 self.is_positive_variable(self.second_wv) is assignment_dict[self.second_wv]:
             return [True, None]
 
-        # non unit new wv case
+        # non unit new wv case #@todo go over this
         for v in self.negative_variables:
             if assignment_dict[v] is not True or assignment_dict[v] is None:
                 if v != self.first_wv and v != self.second_wv:
@@ -122,7 +140,7 @@ class Clause:
                         self.set_wv1(v)
                     else:
                         self.set_wv2(v)
-                    return [v, None]
+                    return self.is_newly_unit(assignment_dict, v)
         for v in self.positive_variables:
             if assignment_dict[v] is not False or assignment_dict[v] is None:
                 if v != self.first_wv and v != self.second_wv:
@@ -130,7 +148,7 @@ class Clause:
                         self.set_wv1(v)
                     else:
                         self.set_wv2(v)
-                    return [v, None]
+                    return self.is_newly_unit(assignment_dict, v)
 
         # newly unit case
         if assignment_dict[self.first_wv] is None or \
@@ -182,13 +200,13 @@ class WatchVariableDb:
             self.insert_clause_wv_to_wvdict(clause, wv2)
 
     def get_clauses_to_be_fixed(self, wv: str, illegal_setting: bool):
-        """returns clauses with bad watch variable"""
+        """returns clauses with bad watch variable"""  #@todo clauses here don't get updated when the other wv changes
         if illegal_setting:
-            bad_clauses = copy.deepcopy(self.watch_variable_dict[wv][POSITIVES])
+            bad_clauses = self.watch_variable_dict[wv][POSITIVES]
             self.watch_variable_dict[wv][POSITIVES] = []
             return bad_clauses
         else:
-            bad_clauses = copy.deepcopy(self.watch_variable_dict[wv][NEGATIVES])
+            bad_clauses = self.watch_variable_dict[wv][NEGATIVES]
             self.watch_variable_dict[wv][NEGATIVES] = []
             return bad_clauses
 

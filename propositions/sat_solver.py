@@ -120,6 +120,8 @@ class Sat_Solver:
             decision = True
         else:
             decision = False
+        # decision = random.sample([True, False], 1)[0]
+        # decision=True
 
         # update relevant dbs
         self.assignment_dict[decision_variable] = decision
@@ -208,7 +210,7 @@ class Sat_Solver:
 
         last_assigned = self.decision_level_history[self.level].find_last_assigned_literal(clause)
         c_tag = self.nodes[last_assigned].get_parent_clause()
-        #@ todo deal with case where this returns none - meaning that we guessed wrong at decision level solution should be to backtracksomehow with inverted clause
+        #@ todo can this return none?
         current = clause.resolve(c_tag)
 
         while uip not in current.get_variables():
