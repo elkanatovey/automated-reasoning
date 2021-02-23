@@ -28,8 +28,26 @@ def run_sat_cnf(formula: str):
     f_prop = propositional_Formula.parse(formula)
     to_solve = Sat_Solver(f_prop)
 
-    return to_solve.start_sat()
-    # deduction steps
+    msg, _ = to_solve.start_sat()
+    if msg is not True:
+        return msg
+
+    while True:
+        # decide
+        decision_var, assignments = to_solve.decide()
+        if decision_var == SAT_MSG:
+            return SAT_MSG, assignments
+
+        # propagate
+        conflict_clause, backjump_level = to_solve.propagate(decision_var)
+
+        # backtrack
+        if conflict_clause is not True and conflict_clause is not UNSAT_MSG:
+            to_solve.backtrack(conflict_clause, backjump_level)
+
+        if conflict_clause is UNSAT_MSG:
+            return UNSAT_MSG
+
 
 
 
