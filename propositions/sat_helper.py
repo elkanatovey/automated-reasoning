@@ -84,7 +84,7 @@ class Clause:
         other_pos = set(other.positive_variables)
         other_neg = set(other.negative_variables)
 
-        local_pos = set(self.negative_variables)
+        local_pos = set(self.positive_variables)
         local_neg = set(self.negative_variables)
 
         pos = other_pos | local_pos
@@ -98,7 +98,7 @@ class Clause:
         resolvent = Clause(tuple((pos, neg)))
         return resolvent
 
-    def is_newly_unit(self, assignment_dict: {}, v: str): #@todo may be unnecessary
+    def is_newly_unit(self, assignment_dict: {}, v: str):
         """helper function for
         >>>self.find_legal_wv()
          - check if new wv assignment is unit and return accordingly
@@ -132,7 +132,7 @@ class Clause:
                 self.is_positive_variable(self.second_wv) is assignment_dict[self.second_wv]:
             return [True, None]
 
-        # non unit new wv case #@todo go over this
+        # non unit new wv case
         for v in self.negative_variables:
             if assignment_dict[v] is not True or assignment_dict[v] is None:
                 if v != self.first_wv and v != self.second_wv:
@@ -200,7 +200,7 @@ class WatchVariableDb:
             self.insert_clause_wv_to_wvdict(clause, wv2)
 
     def get_clauses_to_be_fixed(self, wv: str, illegal_setting: bool):
-        """returns clauses with bad watch variable"""  #@todo clauses here don't get updated when the other wv changes
+        """returns clauses with bad watch variable"""
         if illegal_setting:
             bad_clauses = self.watch_variable_dict[wv][POSITIVES]
             self.watch_variable_dict[wv][POSITIVES] = []

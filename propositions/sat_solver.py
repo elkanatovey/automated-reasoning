@@ -3,6 +3,7 @@ import random
 
 SAT_MSG = "SAT "
 UNSAT_MSG = "UNSAT "
+BACKTRACK_MSG = "Post Backtrack "
 
 class Sat_Solver:
 
@@ -136,18 +137,19 @@ class Sat_Solver:
         - conflict clause, backjump level if ran into conflict
 
         """
-
         # restarted l0
         if self.level == 0:
             return self.start_sat()
 
         # all other levels
         else:
-            conflict_clause = self.propagate_s1_s3(unit_variable)
-            if conflict_clause is not True:
-                conflict_clause = self.get_conflict_clause(conflict_clause)
-                conflict_clause, backjump_level = self.second_highest_node_level(conflict_clause)
-                return conflict_clause, backjump_level
+            # post backtrack check - don't need to prime unit clauses
+            if unit_variable is not BACKTRACK_MSG:
+                conflict_clause = self.propagate_s1_s3(unit_variable)
+                if conflict_clause is not True:
+                    conflict_clause = self.get_conflict_clause(conflict_clause)
+                    conflict_clause, backjump_level = self.second_highest_node_level(conflict_clause)
+                    return conflict_clause, backjump_level
 
             conflict_clause = self.propagate_s2()
             if conflict_clause is not True:
@@ -158,7 +160,10 @@ class Sat_Solver:
         return True, None
 
     def propagate_s2(self):
-        """unit propagate at current level
+        """Update forced assignments that follow from clauses in self.li_unit_clauses at current level.
+        After each forced assignment call self.propagate_s1_s3 with newly assigned variable. If self.propagate_s1_s3
+        returns clause we are in conflict and have found a contradiction clause which we return. Otherwise return True
+        unit propagate at current level
         - return True if propagates successfully
         - otherwise return conflict clause
         """
@@ -179,7 +184,11 @@ class Sat_Solver:
 
 
     def propagate_s1_s3(self, unit_variable: str): # x,y (~x|~y)
-        """unit propagate at current level
+        """ given variable freshly assigned in self.assignment_dict, replace as watch variable from clauses that negate
+        variables assignment. If variable is newly unit clause, add to current level's self.li_unit_clauses
+        (the forced assignment queue to propagate), if clause is contradicted, return clause
+        at all times coherence within self.wv_db is maintained.
+        unit propagate at current level
         - return True if propagates successfully
         - otherwise return conflict clause
         """
@@ -210,7 +219,6 @@ class Sat_Solver:
 
         last_assigned = self.decision_level_history[self.level].find_last_assigned_literal(clause)
         c_tag = self.nodes[last_assigned].get_parent_clause()
-        #@ todo can this return none?
         current = clause.resolve(c_tag)
 
         while uip not in current.get_variables():

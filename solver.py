@@ -1,9 +1,15 @@
 from propositions.syntax import Formula as propositional_Formula
 import propositions.operators as propositional_operators
 import propositions.semantics as propositional_semantics
+
+# msgs
 from propositions.sat_solver import Sat_Solver
-SAT_MSG = "SAT "
-UNSAT_MSG = "UNSAT "
+from propositions.sat_solver import UNSAT_MSG
+from propositions.sat_solver import SAT_MSG
+from propositions.sat_solver import BACKTRACK_MSG
+
+BUG_MSG = "This shouldn't be here"
+
 def run_sat_solver(formula: str):
     f_prop = propositional_Formula.parse(formula)
 
@@ -32,18 +38,28 @@ def run_sat_cnf(formula: str):
     if msg is not True:
         return msg
 
+    to_decide = True
+    decision_var = BUG_MSG
+
     while True:
+
         # decide
-        decision_var, assignments = to_solve.decide()
-        if decision_var == SAT_MSG:
-            return SAT_MSG, assignments
+        if to_decide:
+            decision_var, assignments = to_solve.decide()
+            if decision_var == SAT_MSG:
+                return SAT_MSG, assignments
+        else:
+            to_decide = True
 
         # propagate
+        assert decision_var != BUG_MSG  # sanity check
         conflict_clause, backjump_level = to_solve.propagate(decision_var)
 
         # backtrack
-        if conflict_clause is not True and conflict_clause is not UNSAT_MSG:
+        if conflict_clause is not True and conflict_clause != UNSAT_MSG:
             to_solve.backtrack(conflict_clause, backjump_level)
+            to_decide = False
+            decision_var = BACKTRACK_MSG
 
         if conflict_clause is UNSAT_MSG:
             return UNSAT_MSG
