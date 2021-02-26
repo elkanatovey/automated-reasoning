@@ -415,6 +415,8 @@ class Formula:
     arguments: Optional[Tuple[Term, ...]]
     first: Optional[Formula]
     second: Optional[Formula]
+
+    # not currently used
     variable: Optional[str]
     predicate: Optional[Formula]
 
