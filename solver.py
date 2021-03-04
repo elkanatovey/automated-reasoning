@@ -6,6 +6,7 @@ import propositions.semantics as propositional_semantics
 # predicate imports
 from predicates.syntax import Formula as predicate_Formula
 
+
 # msgs
 from propositions.sat_solver import Sat_Solver
 from propositions.sat_solver import UNSAT_MSG
@@ -32,7 +33,7 @@ def run_sat_solver(formula: str):
             return SAT_MSG, str(model)
 
     # deduction steps
-    return run_sat_cnf(str(f_tseitin_processed))
+    return run_sat_cnf(str(f_tseitin_processed))  # @todo make sure returns only original vars settings
 
 
 def run_sat_cnf(formula: str):
@@ -75,7 +76,11 @@ def run_smt_solver(formula: str):
 
     # get boolean abstraction
     f_pred = predicate_Formula.parse(formula)
-    boolean_abstraction, abstraction_map = f_pred.propositional_skeleton()
+    boolean_abstraction, z2f, f2z = f_pred.propositional_skeleton_mappings()
+
+
+    # create dag
+
 
     to_solve_prop = Sat_Solver(boolean_abstraction)
 

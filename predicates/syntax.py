@@ -853,7 +853,31 @@ class Formula:
             substituted.
         """
         z2f = {}
-        return Formula._proposition_skeleton_helper(self, {}, z2f), z2f
+        f2z = {}
+        return Formula._proposition_skeleton_helper(self, f2z, z2f), z2f
+
+    def propositional_skeleton_mappings(self) -> Tuple[PropositionalFormula,
+                                              Mapping[str, Formula],Mapping[Formula, str]]:
+        """Computes a propositional skeleton of the current formula.
+
+        Returns:
+            A triple. The first element of the pair is a propositional formula
+            obtained from the current formula by substituting every (outermost)
+            subformula that has a relation or quantifier at its root with an
+            atomic propositional formula, consistently such that multiple equal
+            such (outermost) subformulas are substituted with the same atomic
+            propositional formula. The atomic propositional formulas used for
+            substitution are obtained, from left to right, by calling
+            `next`\ ``(``\ `~logic_utils.fresh_variable_name_generator`\ ``)``.
+            The second element of the pair is a map from each atomic
+            propositional formula to the subformula for which it was
+            substituted.
+            The third element of the pair is a map from each subformula to the atomic
+            propositional formula which substituted it.
+        """
+        z2f = {}
+        f2z = {}
+        return Formula._proposition_skeleton_helper(self, f2z, z2f), z2f, f2z
 
 
 
