@@ -33,8 +33,13 @@ def run_sat_solver(formula: str):
             return SAT_MSG, str(model)
 
     # deduction steps
-    return run_sat_cnf(str(f_tseitin_processed))  # @todo make sure returns only original vars settings
-
+    msg, settings = run_sat_cnf(str(f_tseitin_processed))
+    if msg == SAT_MSG:
+        original_variables = f_prop.variables()
+        original_settings = {key: settings[key] for key in original_variables}
+        return msg, original_settings
+    else:
+        return msg, settings
 
 def run_sat_cnf(formula: str):
     """run sat solver on CNF formula without redundancies"""
