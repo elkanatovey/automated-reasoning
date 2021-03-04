@@ -36,7 +36,7 @@ def test_generate_formula_false(debug=False):
         print()
     for f in cnf_l0_false:
         result = run_sat_cnf(f)
-        assert result == "UNSAT "
+        assert result[0] == "UNSAT "
         if debug:
             print(f, "    ",result)
 
@@ -54,6 +54,6 @@ def test_generate_formula_false_l1(debug=False):
         print()
     for f in cnf_l1_false:
         result = run_sat_cnf(f)
-        assert result == "UNSAT "
+        assert result[0] == "UNSAT "
         if debug:
             print(f, "    ",result)

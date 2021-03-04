@@ -43,7 +43,7 @@ def run_sat_cnf(formula: str):
 
     msg, _ = to_solve.start_sat()
     if msg is not True:
-        return msg
+        return msg, None
 
     to_decide = True
     decision_var = BUG_MSG
@@ -69,7 +69,7 @@ def run_sat_cnf(formula: str):
             decision_var = BACKTRACK_MSG
 
         if conflict_clause is UNSAT_MSG:
-            return UNSAT_MSG
+            return UNSAT_MSG, None
 
 
 def run_smt_solver(formula: str):
