@@ -1,8 +1,11 @@
-from predicates.syntax import Formula as predFormula
+import predicates.syntax
 import networkx as nx
 import predicates.syntax as pred
-import smt_helper
+from copy import deepcopy
 
+SAT_MSG = "SAT "
+UNSAT_MSG = "UNSAT "
+BACKTRACK_MSG = "Post Backtrack "
 
 class SmtSolver:
     dag: nx.DiGraph
@@ -10,9 +13,12 @@ class SmtSolver:
     positive_equalities: set
     negative_equalities: set
 
-    def __init__(self, formula: predFormula) -> None:
+    def __init__(self, formula: str) -> None:
+        formula = predicates.syntax.Formula.parse(formula)
+        assert formula is not None
         self.propositional_skeleton, self.z2f, self.f2z = formula.propositional_skeleton_mappings()
         pos_prop, negs_prop = set(), set()
+        self.formula = formula
 
         # pos and negative vars
         clauses = self.propositional_skeleton.get_clauses()
@@ -24,12 +30,13 @@ class SmtSolver:
         self.positive_equalities, self.negative_equalities = set(), set()
         for pos in pos_prop:
             self.positive_equalities.add(self.z2f[pos])
-            top_level_terms.update([self.z2f[pos].arguments])
+            top_level_terms.update(self.z2f[pos].arguments)
         for neg in negs_prop:
             self.negative_equalities.add(self.z2f[neg])
-            top_level_terms.update([self.z2f[neg].arguments])
+            top_level_terms.update(self.z2f[neg].arguments)
 
-        self.dag, nodes = build_dag(top_level_terms)
+        self.dag, self.nodes = build_dag(top_level_terms)
+        self.level = 0
 
     def __repr__(self) -> str:
         return str(self.dag) + " positives: " + str(self.positive_equalities) + " negatives: " + str(
@@ -44,9 +51,76 @@ class SmtSolver:
     def __hash__(self) -> int:
         return hash(str(self))
 
+    def _get_t1_t2_termclass(self, current_nodes, formula):
+        """returns TermClass version of nodes"""
+        return  current_nodes[formula.arguments[0]], current_nodes[formula.arguments[1]]
+
+    def _get_t1_t2(self, current_nodes, formula):
+        """returns Term version of nodes"""
+        return  current_nodes[formula.arguments[0]].term, current_nodes[formula.arguments[1]].term
+
+    def level_up(self):
+        self.level += 1
+        return self.level
+
     def t_propagate(self, assignments: {}):
-        a = nx.utils.union_find.UnionFind()
-        f = a[1]
+        """
+        - return (UNSAT, False) if falsified at level 0
+        - return (UNSAT, True) if falsified at other level
+        - return (SAT, {}) if finished propagation and no contradiction
+        - return (SAT, {var: setting}) if there are new theory lemmas to propagate
+        - return (SAT, True) if all settings have been set and suits congruence closure algorithm
+        """
+        current_nodes = deepcopy(self.nodes)
+        to_propagate = {}
+        finished_propagation = True
+
+        for var in assignments.keys():
+            if assignments[var] is True:
+                var_as_f = self.z2f[var]
+                t1, t2 = self._get_t1_t2_termclass(current_nodes, var_as_f)
+                t1.process_equality(t2, current_nodes)
+
+        for key in assignments.keys():
+            key_as_f = self.z2f[key]
+            t1, t2 = self._get_t1_t2(current_nodes, key_as_f)
+
+            # check for conflict
+            if assignments[key] is False:
+                if TermClass.find(t1, current_nodes) == TermClass.find(t2, current_nodes):
+                    if self.level == 0:
+                        return UNSAT_MSG, False
+                    # conflict clause case
+                    else:
+                        return UNSAT_MSG, True
+
+                # check for stuff to propagate
+            elif assignments[key] is None:
+                finished_propagation = False
+                if TermClass.find(t1, current_nodes) == TermClass.find(t2, current_nodes):
+                    to_propagate[key] = True
+
+        if finished_propagation == True:
+            return SAT_MSG, finished_propagation
+        return SAT_MSG, to_propagate
+
+    def t_explain(self, dpoints_assignments: []):
+        pos = []
+        neg = []
+        for var in dpoints_assignments:
+            if var[1] == True:
+                neg.append(var[0])
+            elif var[1] == False:
+                pos.append(var[0])
+        dpoints_assignments.pop()
+        return tuple([pos, neg])
+
+    def t_backtrack(self, backtrack_level):
+        self.level = backtrack_level
+
+
+
+
 
 
 def _build_dag_term_helper(g: nx.DiGraph(), term: pred.Term, node_dict):
@@ -79,21 +153,6 @@ def build_dag(terms: [pred.Term]) -> [nx.DiGraph, {}]:
     for term in terms:
         _build_dag_term_helper(g, term, nodes)
     return g, nodes
-
-
-def get_boolean_abstraction(formula: predFormula):
-    """returns tuple of boolean abstraction of first order formula
-    and substitution map for reconstruction in [boolean abstraction, substitution_map] form.
-    See formula.propositional_skeleton() for details"""
-    return formula.propositional_skeleton()
-
-
-def t_propagate():
-    pass
-
-
-def congruence_closure():
-    pass
 
 
 def get_sat_l0():
@@ -158,17 +217,17 @@ class TermClass:
         # return parents for congruence closure
         return t1_parents, t2_parents
 
-    def process_equality(self, t2, dag):
+    def process_equality(self, t2, node_dict):
         if self.get_representative() == t2.get_representative():
             return
 
         t1_parents, t2_parents = self.merge_classes(t2)
         for t1_par in t1_parents:
             for t2_par in t2_parents:
-                if t1_par.is_congruent(t2_par, dag):
-                    t1_par.process_equality(t2, dag)
+                if t1_par.is_congruent(t2_par, node_dict):
+                    t1_par.process_equality(t2, node_dict)
 
-    def is_congruent(self, t2, dag):
+    def is_congruent(self, t2, node_dict):
         # comparison against self
         if self == t2:
             return True
@@ -179,11 +238,12 @@ class TermClass:
 
             if len(self.term.arguments) == len(t2.term.arguments):
                 for i in range(0, len(self.term.arguments)):
-                    if TermClass.find(self.term.arguments[i]) != TermClass.find(self.term.arguments[i]):
+                    if TermClass.find(self.term.arguments[i], node_dict) != TermClass.find(self.term.arguments[i], node_dict):
                         return False
                 return True
         return False
 
     @staticmethod
     def find(subterm, node_dict):
+        """expects subterm to be of class Term, returns representative of term given node_dict"""
         return node_dict[subterm].get_representative()

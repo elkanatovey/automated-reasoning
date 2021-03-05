@@ -457,6 +457,7 @@ class Formula:
         individual_clauses.append(clause)
         return individual_clauses
 
+
     @staticmethod
     def __generate_clause(clause_tuple: Tuple[List[str], List[str]]) -> Formula:
         if len(clause_tuple[POS]) == 0 and len(clause_tuple[NEG]) == 0:
