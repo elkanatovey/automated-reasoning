@@ -6,7 +6,8 @@ from typing import AbstractSet, Mapping, Optional, Sequence, Set, Tuple, Union
 from logic_utils import fresh_variable_name_generator, frozen
 
 from propositions.syntax import Formula as PropositionalFormula, \
-                                is_variable as is_propositional_variable
+    is_variable as is_propositional_variable
+
 
 class ForbiddenVariableError(Exception):
     """Raised by `Term.substitute` and `Formula.substitute` when a substituted
@@ -23,6 +24,7 @@ class ForbiddenVariableError(Exception):
         assert is_variable(variable_name)
         self.variable_name = variable_name
 
+
 def is_constant(s: str) -> bool:
     """Checks if the given string is a constant name.
 
@@ -32,8 +34,9 @@ def is_constant(s: str) -> bool:
     Returns:
         ``True`` if the given string is a constant name, ``False`` otherwise.
     """
-    return  (((s[0] >= '0' and s[0] <= '9') or (s[0] >= 'a' and s[0] <= 'd'))
-             and s.isalnum()) or s == '_'
+    return (((s[0] >= '0' and s[0] <= '9') or (s[0] >= 'a' and s[0] <= 'd'))
+            and s.isalnum()) or s == '_'
+
 
 def is_variable(s: str) -> bool:
     """Checks if the given string is a variable name.
@@ -46,6 +49,7 @@ def is_variable(s: str) -> bool:
     """
     return s[0] >= 'u' and s[0] <= 'z' and s.isalnum()
 
+
 def is_function(s: str) -> bool:
     """Checks if the given string is a function name.
 
@@ -56,6 +60,7 @@ def is_function(s: str) -> bool:
         ``True`` if the given string is a function name, ``False`` otherwise.
     """
     return s[0] >= 'f' and s[0] <= 't' and s.isalnum()
+
 
 @frozen
 class Term:
@@ -98,8 +103,8 @@ class Term:
         """
         if is_constant(self.root) or is_variable(self.root):
             return self.root
-        return self.root + '('+ ','.join([str(self.arguments[i]) for i in
-                                          range(len(self.arguments))]) + ')'
+        return self.root + '(' + ','.join([str(self.arguments[i]) for i in
+                                           range(len(self.arguments))]) + ')'
 
     def __eq__(self, other: object) -> bool:
         """Compares the current term with the given one.
@@ -112,7 +117,7 @@ class Term:
             current term, ``False`` otherwise.
         """
         return isinstance(other, Term) and str(self) == str(other)
-        
+
     def __ne__(self, other: object) -> bool:
         """Compares the current term with the given one.
 
@@ -172,12 +177,12 @@ class Term:
                     break
 
             # bad input case
-            if not((not len(s) == i) and (not s[i] != '(')):
+            if not ((not len(s) == i) and (not s[i] != '(')):
                 return None, s
 
             func_name = s[:i]
 
-            func_params, to_parse = Term.parse_prefix(s[i+1:])
+            func_params, to_parse = Term.parse_prefix(s[i + 1:])
             if len(to_parse) == 0:
                 return None, s
 
@@ -457,7 +462,7 @@ class Formula:
             assert isinstance(arguments_or_first_or_variable, Formula) and \
                    second_or_predicate is not None
             self.root, self.first, self.second = \
-                root, arguments_or_first_or_variable, second_or_predicate           
+                root, arguments_or_first_or_variable, second_or_predicate
         else:
             assert is_quantifier(root)
             # Populate self.variable and self.predicate
@@ -481,7 +486,7 @@ class Formula:
 
         elif is_relation(self.root):
             return self.root + '(' + ','.join([str(self.arguments[i]) for i in
-                                       range(len(self.arguments))]) + ')'
+                                               range(len(self.arguments))]) + ')'
 
         elif is_unary(self.root):
             return self.root + str(self.first)
@@ -490,7 +495,7 @@ class Formula:
             return self.root + self.variable + '[' + str(self.predicate) + ']'
 
         elif is_binary(self.root):
-            return '('+str(self.first) + self.root + str(self.second) + ')'
+            return '(' + str(self.first) + self.root + str(self.second) + ')'
 
     def __eq__(self, other: object) -> bool:
         """Compares the current formula with the given one.
@@ -503,7 +508,7 @@ class Formula:
             current formula, ``False`` otherwise.
         """
         return isinstance(other, Formula) and str(self) == str(other)
-        
+
     def __ne__(self, other: object) -> bool:
         """Compares the current formula with the given one.
 
@@ -546,10 +551,10 @@ class Formula:
             rel_name = s[:i]
 
             # case no args
-            if s[i+1] == ')':
-                return Formula(rel_name, []), s[i+2:]
+            if s[i + 1] == ')':
+                return Formula(rel_name, []), s[i + 2:]
 
-            rel_param, to_parse = Term.parse_prefix(s[i+1:])
+            rel_param, to_parse = Term.parse_prefix(s[i + 1:])
             if len(to_parse) == 0:
                 return None, s
 
@@ -579,7 +584,7 @@ class Formula:
                     break
             quantifier = s[0]
             quantified_var = s[1:i]
-            quantified_formula, remainder = Formula.parse_prefix(s[i+1:])
+            quantified_formula, remainder = Formula.parse_prefix(s[i + 1:])
             return Formula(quantifier, quantified_var, quantified_formula), \
                    remainder[1:]
 
@@ -741,7 +746,7 @@ class Formula:
 
     def substitute(self, substitution_map: Mapping[str, Term],
                    forbidden_variables: AbstractSet[str] = frozenset()) -> \
-                Formula:
+            Formula:
         """Substitutes in the current formula, each constant name `name` or free
         occurrence of variable name `name` that is a key in `substitution_map`
         with the term `substitution_map[name]`.
@@ -783,14 +788,14 @@ class Formula:
         for variable in forbidden_variables:
             assert is_variable(variable)
 
-        #substitute terms
+        # substitute terms
         if is_equality(self.root) or is_relation(self.root):
             new_arguments = []
             for arg in self.arguments:
                 new_arguments.append(arg.substitute(substitution_map, forbidden_variables))
             return Formula(self.root, new_arguments)
 
-        #substitute formulas
+        # substitute formulas
         if is_unary(self.root):
             return Formula("~", self.first.substitute(substitution_map, forbidden_variables))
 
@@ -813,7 +818,7 @@ class Formula:
     def _proposition_skeleton_helper(f: Formula, f2z:
     Mapping[Formula, PropositionalFormula], z2f: Mapping[str, Formula]):
 
-        #case equality, relation, quantifier
+        # case equality, relation, quantifier
         if is_equality(f.root) or is_relation(f.root) or is_quantifier(f.root):
             if f in f2z.keys():
                 return f2z[f]
@@ -847,7 +852,7 @@ class Formula:
             such (outermost) subformulas are substituted with the same atomic
             propositional formula. The atomic propositional formulas used for
             substitution are obtained, from left to right, by calling
-            `next`\ ``(``\ `~logic_utils.fresh_variable_name_generator`\ ``)``.
+            next(logic_utils.fresh_variable_name_generator).
             The second element of the pair is a map from each atomic
             propositional formula to the subformula for which it was
             substituted.
@@ -857,9 +862,8 @@ class Formula:
         return Formula._proposition_skeleton_helper(self, f2z, z2f), z2f
 
     def propositional_skeleton_mappings(self) -> Tuple[PropositionalFormula,
-                                              Mapping[str, Formula],Mapping[Formula, str]]:
+                                                       Mapping[str, Formula], Mapping[Formula, str]]:
         """Computes a propositional skeleton of the current formula.
-
         Returns:
             A triple. The first element of the pair is a propositional formula
             obtained from the current formula by substituting every (outermost)
@@ -868,7 +872,7 @@ class Formula:
             such (outermost) subformulas are substituted with the same atomic
             propositional formula. The atomic propositional formulas used for
             substitution are obtained, from left to right, by calling
-            `next`\ ``(``\ `~logic_utils.fresh_variable_name_generator`\ ``)``.
+            next(logic_utils.fresh_variable_name_generator).
             The second element of the pair is a map from each atomic
             propositional formula to the subformula for which it was
             substituted.
@@ -878,8 +882,6 @@ class Formula:
         z2f = {}
         f2z = {}
         return Formula._proposition_skeleton_helper(self, f2z, z2f), z2f, f2z
-
-
 
     @staticmethod
     def from_propositional_skeleton(skeleton: PropositionalFormula,

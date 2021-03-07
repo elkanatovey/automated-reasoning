@@ -65,6 +65,8 @@ class SmtSolver:
 
     def t_propagate(self, assignments: {}):
         """
+        Run congruence closure algorithm on the formula's dag, returns theory lemma's to propagate at the
+        SAT solver level, or SAT/UNSAT as appropriate
         - return (UNSAT, False) if falsified at level 0
         - return (UNSAT, True) if falsified at other level
         - return (SAT, {}) if finished propagation and no contradiction
@@ -105,6 +107,9 @@ class SmtSolver:
         return SAT_MSG, to_propagate
 
     def t_explain(self, dpoints_assignments: []):
+        """create a conflict clause made up exclusively of (negated) decision points. For
+        example: if we decided {x1:True, x2:True, x3:False},
+        will return disjunction of {{x1:False, x2:False, x3:True}} """
         pos = []
         neg = []
         for var in dpoints_assignments:
@@ -164,14 +169,10 @@ def build_dag(terms: [pred.Term]) -> [nx.DiGraph, {}]:
     return g, nodes
 
 
-def get_sat_l0():
-    pass
-
-
 from copy import copy
 
 """
-Union-find data structure.
+Union-find data structure. used to maintain state of DAG during Congruence Closure algorithm
 """
 
 
@@ -205,11 +206,18 @@ class TermClass:
         return current_rep
 
     def add_parent(self, p):
+        """add parent p of current term x, to x's representatives parents.
+        Example: given term x with rep r, term f(x) is a parent of x and will be
+        added to r.parents"""
         assert isinstance(p, TermClass)
         rep = self.get_representative()
         rep.parents.add(p)
 
     def merge_classes(self, t2):
+        """merge equivalence classes of two terms,
+        and return parents of both classes to check for congruence.
+        Note that the copy t1_parents, t2_parents modifies only the container and still
+        contains the original nodes"""
         # find reps
         rep = self.get_representative()
         t2_rep = t2.get_representative()
@@ -227,6 +235,8 @@ class TermClass:
         return t1_parents, t2_parents
 
     def process_equality(self, t2, node_dict):
+        """merge the equivalence classes of two terms and merge the equivalence classes of their
+        parents, if said parents are congruent - done recursively"""
         if self.get_representative() == t2.get_representative():
             return
 
@@ -237,6 +247,8 @@ class TermClass:
                     t1_par.process_equality(t2_par, node_dict)
 
     def is_congruent(self, t2, node_dict):
+        """vcheck congruence of two terms. two terms are congruent  if their function names are equal,
+        and their subterms in order are in the same equivalence classes"""
         # comparison against self
         if self == t2:
             return True
