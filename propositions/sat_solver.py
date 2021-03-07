@@ -329,7 +329,7 @@ class Sat_Solver:
         return c, jump_level
 
     def __largest_available_vsids_member(self):
-        """return best key if remains, else return true"""
+        """return best key if remains, else return true, break ties by lexicographically smaller key"""
         max = -1
         best_key = True
         for key in self.VSIDS_dict:
@@ -337,4 +337,7 @@ class Sat_Solver:
                 if max < self.VSIDS_dict[key]:
                     best_key = key
                     max = self.VSIDS_dict[key]
+                elif max == self.VSIDS_dict[key]:  # key must be an str here
+                    if key < best_key:
+                        best_key = key
         return best_key
