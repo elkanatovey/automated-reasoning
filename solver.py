@@ -135,8 +135,15 @@ if __name__ == "__main__":
     f = input("Please enter formula")
 
     if solver == '1':
-        result = run_sat_solver(f)
-        print(result)
+        cnf = input("Enter 1 for CNF, 2 for nonCNF")
+        if cnf == '1':
+            result = run_sat_cnf(f)
+            print(result)
+        elif solver == '2':
+            result = run_sat_solver(f)
+            print(result)
+        else:
+            print("nonexistent solver")
     elif solver == '2':
         result = run_smt_solver(f)
         print(result)
