@@ -5,7 +5,7 @@ dag_terms_large = ['a12', 'f(a,g(x))', 's(s(s(0)))', 'plus(x,s(_))',
               'plus(plus(x,plus(y,z)),w)']
 smt_formulas = ['(f(x)=g(y)&g(y)=f(x))','plus(plus(x,plus(y,z)),w)=y', 'f(x)=g(y)']
 
-smt_formulas_complicated = ['(~f(x)=g(y)&y=x)']
+smt_formulas_complicated = ['(~f(x)=f(y)&(y=x|y1=plus(plus(x,plus(y,z)),w)))']
 
 def test_smt_solver(debug=False):
     for f in smt_formulas:

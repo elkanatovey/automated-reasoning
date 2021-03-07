@@ -123,9 +123,18 @@ class SmtSolver:
 
 
 
-def _build_dag_term_helper(g: nx.DiGraph(), term: pred.Term, node_dict):
+def _build_dag_term_helper(g: nx.DiGraph(), term: pred.Term, node_dict, from_term_list=True):
+    """recursively construct dag of terms for congruence closure algorithm. Also construct dag
+    in nx.digraph form for printing purposes.
+    returns: None - graph modified in place"""
     # base case
     if not pred.is_function(term.root):
+        # top level term that is not function
+        if from_term_list:
+            if term not in node_dict.keys():
+                t1 = TermClass(term, parents=set())
+                node_dict[term] = t1
+                g.add_node(t1)
         return
 
     if term not in node_dict.keys():
@@ -142,7 +151,7 @@ def _build_dag_term_helper(g: nx.DiGraph(), term: pred.Term, node_dict):
             t2.add_parent(t1)
 
         g.add_edge(t1, t2)
-        _build_dag_term_helper(g, sub_term, node_dict)
+        _build_dag_term_helper(g, sub_term, node_dict, False)
 
 
 def build_dag(terms: [pred.Term]) -> [nx.DiGraph, {}]:
@@ -225,7 +234,7 @@ class TermClass:
         for t1_par in t1_parents:
             for t2_par in t2_parents:
                 if t1_par.is_congruent(t2_par, node_dict):
-                    t1_par.process_equality(t2, node_dict)
+                    t1_par.process_equality(t2_par, node_dict)
 
     def is_congruent(self, t2, node_dict):
         # comparison against self
