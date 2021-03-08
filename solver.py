@@ -96,7 +96,7 @@ def run_smt_solver(formula: str):
     dpoints_settings = []  # list of tuples (dvar, setting)
     while True:
         sat_assignments_dict = sat_solver.assignment_dict
-        print(sat_assignments_dict)
+        # print(sat_assignments_dict)
         msg, assignments = smt_solver.t_propagate(sat_assignments_dict)
 
         # sat/unsat
