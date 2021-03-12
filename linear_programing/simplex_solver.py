@@ -7,28 +7,31 @@ UNBOUNDED = "UNBOUNDED"
 TERMINATION = "TERMINATION"
 
 EPSILON = 0.00000000001
+MAXIMUM_NUM_OF_ETA_MAT = 10
 
 class LP_Solver:
 
     def __init__(self):
 
-        # # better to hold vars as integers (in Bland's rule we need to choose smallest)
+        # better to hold vars as integers (in Bland's rule we need to choose smallest)
         # self.X_B = np.array([4, 5, 6], dtype=np.float64)
         # self.X_N = np.array([1, 2, 3], dtype=np.float64)
-        #
         # self.An = np.array([[1, 1, 2], [2, 0, 3], [2, 1, 3]], dtype=np.float64)
-        #
         # self.C_N = np.array([3, 2, 4], dtype=np.float64)
         # self.Xb_star = np.array([4, 5, 7], dtype=np.float64)
 
-        self.X_B = np.array([5, 6, 7], dtype=np.float64)
-        self.X_N = np.array([1, 2, 3, 4], dtype=np.float64)
+        self.X_B = np.array([4, 5, 6], dtype=np.float64)
+        self.X_N = np.array([1, 2, 3], dtype=np.float64)
+        self.An = np.array([[1, 1, -1], [1, 2, 2], [1, 1, -4]], dtype=np.float64)
+        self.C_N = np.array([-1, 0, 0], dtype=np.float64)
+        self.Xb_star = np.array([-1, -6, 2], dtype=np.float64)
 
-        self.An = np.array([[3, 2, 1, 2], [1, 1, 1, 1], [4, 3, 3, 4]], dtype=np.float64)
 
-        self.C_N = np.array([19, 13, 12, 17], dtype=np.float64)
-        self.Xb_star = np.array([225, 117, 420], dtype=np.float64)
-
+        # self.X_B = np.array([5, 6, 7], dtype=np.float64)
+        # self.X_N = np.array([1, 2, 3, 4], dtype=np.float64)
+        # self.An = np.array([[3, 2, 1, 2], [1, 1, 1, 1], [4, 3, 3, 4]], dtype=np.float64)
+        # self.C_N = np.array([19, 13, 12, 17], dtype=np.float64)
+        # self.Xb_star = np.array([225, 117, 420], dtype=np.float64)
 
         self.iterations_before_bland = self.ncr(len(self.X_N) + len(self.X_B), len(self.Xb_star))
 
@@ -36,12 +39,13 @@ class LP_Solver:
         self.C_B = np.zeros(len(self.X_B), dtype=np.float64)
         self.B = np.identity(len(self.X_B), dtype=np.float64)
 
-        self.eta_matrices = [(0, np.array([1, 0, 0]))]   # keep the eta matrices as tuples (col_num,col)
+        self.eta_matrices = [(0, np.array([1, 0, 0]))]  # keep the eta matrices as tuples (col_num,col)
 
+        self.iters = 0
         self.t = -1
         self.d = np.array([], dtype=np.float64)
-        self.bland_on = False
-
+        self.bland_on = True
+        self.auxilary_problem = True
 
     def ncr(self, n, r):
         r = min(r, n - r)
@@ -50,52 +54,87 @@ class LP_Solver:
         return numer // denom
 
     def revised_simplex(self):
-        iters = 0
 
-        while(True):
-            # if(iters == 7):
-            #     print(iters)
-            if(iters >= self.iterations_before_bland):
+        while (True):
+
+            # print(iters)
+
+            if (self.iters >= self.iterations_before_bland):
                 self.bland_on = True
 
             # termination - got to optimal solution
             if all(x <= 0 for x in self.C_N) and all(y <= 0 for y in self.C_B):
-                self.terminate(TERMINATION)
-                break
+                if(self.auxilary_problem == False):
+                    self.terminate(TERMINATION)     # in auxiliary problem the subject function is -X0
+                    break
 
-            # the entering variable and it's column index in the table
-            entering_ind = self.BTRAN()
-            if(entering_ind == TERMINATION):
-                self.terminate(entering_ind)
-                break
+            leaving_ind, entering_ind = 0, 0
+            entering_index_num_of_tries = 0  # for numerical stability on the diagonal of eta matrices
+            entering_indexes_already_tried = []
+            while (True):
 
-            leaving_ind = self.FTRAN(entering_ind)
-            if(leaving_ind == TERMINATION or leaving_ind == UNBOUNDED):
-                self.terminate(leaving_ind)
+                # the entering variable and it's column index in the table
+                entering_ind, entering_indexes_already_tried = self.BTRAN(entering_index_num_of_tries,
+                                                                          entering_indexes_already_tried)
+                if (entering_ind == TERMINATION):
+                    self.terminate(entering_ind)
+                    break
+
+                leaving_ind = self.FTRAN(entering_ind)
+                if (leaving_ind == TERMINATION or leaving_ind == UNBOUNDED):
+                    self.terminate(leaving_ind)
+                    break
+
+                entering_index_num_of_tries += 1
+
+                # vec d will be in the eta matrix in column leaving_ind, so need to check that d[leaving_ind] is not smaller than EPSILON
+                if (self.d[leaving_ind] > EPSILON or entering_index_num_of_tries == len(self.C_N)):
+                    break
+
+            if leaving_ind == TERMINATION or entering_ind == TERMINATION or leaving_ind == UNBOUNDED:
                 break
 
             self.swap_and_update(entering_ind, leaving_ind)
-            iters += 1
+            self.iters += 1
 
-    def BTRAN(self):
+
+
+    def BTRAN(self, entering_index_num_of_tries, entering_indexes_already_tried):
         y = self.compute_y(self.C_B)
         product = np.dot(y, self.An)
 
-        # Dantzig's rule
-        if(self.bland_on == False):
+        if(self.auxilary_problem == True and self.iters == 0):
+            entering_index = np.argmin(self.Xb_star)
+
+        elif (self.bland_on == False):
+            #   Dantzig's rule
+
             diff = self.C_N - product
-            entering_index = np.argmax(diff)
-            if(np.max(diff)<=0):
-                return TERMINATION
+            entering_index_try = sorted(diff)[len(self.C_N) - 1 - entering_index_num_of_tries]
+
+            list_of_ind = np.where(diff == entering_index_try)[0]
+            # maybe there is more than 1 index that equals to the i-th biggest value
+
+            entering_index = -1
+
+            for i in range(len(list_of_ind)):  # looking for one that wasn't tried yet
+                if list_of_ind[i] not in entering_indexes_already_tried:
+                    entering_index = list_of_ind[i]
+                    entering_indexes_already_tried.append(entering_index)
+
+            assert entering_index != -1
+
+            if np.max(diff) <= 0:
+                return TERMINATION, None
         else:
-        # Bland's rule
+            #   Bland's rule
             entering_candidates_indexes = np.where(product < self.C_N)[0]
-            if (len(entering_candidates_indexes) == 0):  # Terminate
-                return TERMINATION
-            entering_index = min(entering_candidates_indexes)
+            if len(entering_candidates_indexes) == 0:  # Terminate
+                return TERMINATION, None
 
-        return entering_index
+            entering_index = sorted(entering_candidates_indexes)[entering_index_num_of_tries]
 
+        return entering_index, entering_indexes_already_tried
 
     def FTRAN(self, entering_var):
         self.d = self.compute_d(self.An[:, entering_var])
@@ -108,11 +147,10 @@ class LP_Solver:
 
         diff = self.Xb_star - self.t * self.d
 
-        if(np.any(diff < -1 * EPSILON)):
+        if np.any(diff < -1 * EPSILON):
             return UNBOUNDED
 
         return best_t_ind
-
 
     def swap_and_update(self, entering_ind, leaving_ind):
         self.C_B[leaving_ind], self.C_N[entering_ind] = self.C_N[entering_ind], self.C_B[leaving_ind]
@@ -129,20 +167,22 @@ class LP_Solver:
         # updating Eta matrices list
         self.eta_matrices.append((leaving_ind, copy.deepcopy(self.d)))
 
+        if(len(self.eta_matrices) > MAXIMUM_NUM_OF_ETA_MAT):
+            self.lu_factorization()
 
     def terminate(self, terminate_reason):
         """
             Terminate - if it got an optimal solution - print the results
         """
 
-        if(terminate_reason == UNBOUNDED):
+        if (terminate_reason == UNBOUNDED):
             print("The problem is unbounded.")
-        elif(terminate_reason == TERMINATION):
+        elif (terminate_reason == TERMINATION):
             objective_function = "The objective function is: "
             sum = 0
             for i in range(len(self.Xb_star)):
                 objective_function += str(self.Xb_star[i]) + " * " + str(self.C_B[i])
-                if(i != len(self.Xb_star) - 1):
+                if (i != len(self.Xb_star) - 1):
                     objective_function += " + "
                 sum += (self.Xb_star[i] * self.C_B[i])
             objective_function += ' = ' + str(sum)
@@ -150,7 +190,7 @@ class LP_Solver:
 
             optimal_solution = "The optimal solution is: "
             for i in range(1, len(self.X_N) + len(self.X_B) + 1):
-                if(i in self.X_N):
+                if (i in self.X_N):
                     optimal_solution += ("x" + str(i) + " = 0, ")
                 else:
                     optimal_solution += ("x" + str(i) + " = " + str(self.Xb_star[np.where(i == self.X_B)[0][0]]) + ", ")
@@ -175,11 +215,10 @@ class LP_Solver:
             col_num, col = self.eta_matrices[i][0], self.eta_matrices[i][1]
             answer_vec[col_num] = vec[col_num] / col[col_num]
             for j in range(len(vec)):
-                if( j != col_num):
+                if (j != col_num):
                     answer_vec[j] = (vec[j] - (answer_vec[col_num] * col[j]))
             vec = np.array(answer_vec)
         return answer_vec
-
 
     def lu_factorization(self):
         """
@@ -196,13 +235,27 @@ class LP_Solver:
                 mat[j] = mat[j] + mat[i] * multiply
                 l_mat[j] = l_mat[j] + l_mat[i] * multiply
 
-            self.eta_matrices.append(np.linalg.inv(l_mat))
+            self.eta_matrices.append(self.eta_matrix_to_list(np.linalg.inv(l_mat)))
 
         # compute U matrices
-        for i in range(len(mat)-1, -1, -1):
+        for i in range(len(mat) - 1, -1, -1):
             u_mat = np.identity(len(mat))
             u_mat[:, i] = mat[:, i]
-            self.eta_matrices.append(u_mat)
+            self.eta_matrices.append(self.eta_matrix_to_list(u_mat))
+
+    def eta_matrix_to_list(self, mat):
+        """
+        return a compact presentation of the eta mat - [col_num, col]
+        """
+        identity = np.identity(len(mat))
+        for i in range(len(mat)):
+            if(np.all(identity[:, i] == mat[:, i])):
+                continue
+            else:
+                return [i, mat[:, i]]
+
+        return [0, identity[:, 0]]      # case of identity mat
+
 
 
     # def is_triangular(self, matrix):
@@ -211,8 +264,6 @@ class LP_Solver:
     #             if(matrix[i, j] != 0):
     #                 return False
     #     return True
-
-
 
     # # sanity check to check if multiplication of the eta matrices equal B
     # def compute_B(self):
@@ -225,7 +276,8 @@ class LP_Solver:
     #     print("mat  " , mat)
     #     print("B  ", self.B)
 
-# a = np.array([1,2,3])
 
+# a = np.array([1, 2, 3])
+# print(sorted(a))
 s = LP_Solver()
 s.revised_simplex()

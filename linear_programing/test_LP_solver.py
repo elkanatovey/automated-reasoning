@@ -26,3 +26,5 @@ def test_simplex_solver(debug=False):
 
     s = LP_Solver()
     s.revised_simplex()
+
+
