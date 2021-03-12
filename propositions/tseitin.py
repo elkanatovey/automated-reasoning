@@ -1,100 +1,8 @@
-"""Syntactic conversion of propositional formulae to use only specific sets of
-operators."""
+from typing import Union
 
-from propositions.syntax import *
-from propositions.semantics import *
 from logic_utils import fresh_variable_name_generator
+from propositions.syntax import Formula, is_variable, is_constant, is_unary, is_binary
 
-def to_not_and_or(formula: Formula) -> Formula:
-    """Syntactically converts the given formula to an equivalent formula that
-    contains no constants or operators beyond ``'~'``, ``'&'``, and ``'|'``.
-
-    Parameters:
-        formula: formula to convert.
-
-    Return:
-        A formula that has the same truth table as the given formula, but
-        contains no constants or operators beyond ``'~'``, ``'&'``, and
-        ``'|'``.
-    """
-    # Task 3.5
-    return formula.substitute_operators(
-        {'+': Formula.parse_prefix('((p&~q)|(~p&q))')[0],
-         '->': Formula.parse_prefix('~(p&~q)')[0],
-         '<->': Formula.parse_prefix('((p&q)|(~p&~q))')[0],
-         '-&': Formula.parse_prefix('~(p&q)')[0],
-         '-|': Formula.parse_prefix('~(p|q)')[0],
-         'T': Formula.parse_prefix('(p|~p)')[0],
-         'F': Formula.parse_prefix('(p&~p)')[0]})
-
-def to_not_and(formula: Formula) -> Formula:
-    """Syntactically converts the given formula to an equivalent formula that
-    contains no constants or operators beyond ``'~'`` and ``'&'``.
-
-    Parameters:
-        formula: formula to convert.
-
-    Return:
-        A formula that has the same truth table as the given formula, but
-        contains no constants or operators beyond ``'~'`` and ``'&'``.
-    """
-    # Task 3.6a
-    f = to_not_and_or(formula)
-    return f.substitute_operators({'|': Formula.parse_prefix('~(~p&~q)')[0]})
-
-
-def to_nand(formula: Formula) -> Formula:
-    """Syntactically converts the given formula to an equivalent formula that
-    contains no constants or operators beyond ``'-&'``.
-
-    Parameters:
-        formula: formula to convert.
-
-    Return:
-        A formula that has the same truth table as the given formula, but
-        contains no constants or operators beyond ``'-&'``.
-    """
-    # Task 3.6b
-    f = to_not_and_or(formula) # faster than to_not_and
-    return f.substitute_operators({'~': Formula.parse_prefix('(p-&p)')[0],
-                                   '&': Formula
-                                  .parse_prefix('((p-&q)-&(p-&q))')[0],
-                                   # speeds up runtime
-                                   '|': Formula.
-                                  parse_prefix('((p-&p)-&(q-&q))')[0]})
-
-
-def to_implies_not(formula: Formula) -> Formula:
-    """Syntactically converts the given formula to an equivalent formula that
-    contains no constants or operators beyond ``'->'`` and ``'~'``.
-
-    Parameters:
-        formula: formula to convert.
-
-    Return:
-        A formula that has the same truth table as the given formula, but
-        contains no constants or operators beyond ``'->'`` and ``'~'``.
-    """
-    # Task 3.6c
-    f = to_nand(formula)
-    return f.substitute_operators({'-&': Formula.parse_prefix('(p->~q)')[0]})
-
-
-def to_implies_false(formula: Formula) -> Formula:
-    """Syntactically converts the given formula to an equivalent formula that
-    contains no constants or operators beyond ``'->'`` and ``'F'``.
-
-    Parameters:
-        formula: formula to convert.
-
-    Return:
-        A formula that has the same truth table as the given formula, but
-        contains no constants or operators beyond ``'->'`` and ``'F'``.
-
-    """
-    # Task 3.6d
-    f = to_implies_not(formula)
-    return f.substitute_operators({'~': Formula.parse_prefix('(p->F)')[0]})
 
 def to_NNF(formula: Formula) -> Formula:
     '''
@@ -103,6 +11,7 @@ def to_NNF(formula: Formula) -> Formula:
     :return: formula in NNF form
     '''
     return to_NNF_push_negations(to_NNF_eliminate_IFF_and_IF(formula))
+
 
 def to_NNF_eliminate_IFF_and_IF(formula: Formula) -> Formula:
     '''
@@ -117,6 +26,7 @@ def to_NNF_eliminate_IFF_and_IF(formula: Formula) -> Formula:
          '->': Formula.parse_prefix('~(p&~q)')[0],
          '<->': Formula.parse_prefix('((p&q)|(~p&~q))')[0]
         })
+
 
 def to_NNF_push_negations(formula: Formula) -> Formula:
     '''
@@ -233,9 +143,6 @@ def preprocess_clauses(formula: Formula) -> Formula:
             return Formula('|', pos_conjunction, neg_conjunction)
 
     return formula
-
-
-
 
 
 def NNF_to_CNF(formula: Formula) -> Formula:

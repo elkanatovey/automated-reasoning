@@ -47,7 +47,7 @@ def evaluate(formula: Formula, model: Model) -> bool:
     """
     assert is_model(model)
     assert formula.variables().issubset(variables(model))
-    # Task 2.1
+
 
     # binary case
     if hasattr(formula, 'second'):
@@ -185,7 +185,6 @@ def is_tautology(formula: Formula) -> bool:
     Returns:
         ``True`` if the given formula is a tautology, ``False`` otherwise.
     """
-    # Task 2.5a
     atomic_vars = list(formula.variables())
     models = all_models(atomic_vars)
     tautology_check = truth_values(formula, models)
@@ -222,100 +221,4 @@ def is_satisfiable(formula: Formula) -> bool:
     Returns:
         ``True`` if the given formula is satisfiable, ``False`` otherwise.
     """
-    # Task 2.5c
     return not is_contradiction(formula)
-
-
-def synthesize_for_model(model: Model) -> Formula:
-    """Synthesizes a propositional formula in the form of a single clause that
-      evaluates to ``True`` in the given model, and to ``False`` in any other
-      model over the same variables.
-
-    Parameters:
-        model: model in which the synthesized formula is to hold.
-
-    Returns:
-        The synthesized formula.
-    """
-    assert is_model(model)
-    # Task 2.6
-    if len(model.keys()) == 1:
-        for key in model:
-            if model[key]:
-                return Formula(key)
-            s = '~' + key
-            return Formula.parse_prefix(s)[0]
-    formula_string = ''
-    count = -1
-    for key in model:
-        if not model[key]:
-            if (count+2) == len(model.keys()):
-                formula_string = formula_string + '~' + key
-            else:
-                formula_string = formula_string + '(~' + key + '&'
-        else:
-            if (count+2) == len(model.keys()):
-                formula_string = formula_string + key
-            else:
-                formula_string += '(' + key + '&'
-        count += 1
-    formula_string = formula_string + ')'*count
-    return Formula.parse_prefix(formula_string)[0]
-
-def synthesize(variables: List[str], values: Iterable[bool]) -> Formula:
-    """Synthesizes a propositional formula in DNF over the given variables, from
-    the given specification of which value the formula should have on each
-    possible model over these variables.
-
-    Parameters:
-        variables: the set of variables for the synthesize formula.
-        values: iterable over truth values for the synthesized formula in every
-            possible model over the given variables, in the order returned by
-            `all_models`\ ``(``\ `~synthesize.variables`\ ``)``.
-
-    Returns:
-        The synthesized formula.
-
-    Examples:
-        >>> formula = synthesize(['p', 'q'], [True, True, True, False])
-        >>> for model in all_models(['p', 'q']):
-        ...     evaluate(formula, model)
-        True
-        True
-        True
-        False
-    """
-    assert len(variables) > 0
-    # Task 2.7
-
-    models = all_models(variables)
-    dnf_string = ''
-    most_recent_formula = ''
-    count = -1
-    for value, model in zip(values, models):
-        if value:
-            most_recent_formula = str(synthesize_for_model(model))
-            dnf_string += '(' + most_recent_formula + '|'
-            count += 1
-
-    # false table case
-    if count == -1:
-        contradiction_str = ''
-        count = 0
-        for atom in variables:
-            contradiction_str = '(('+atom+'&~'+atom+')&'
-        if count == 0:
-            contradiction_str = contradiction_str[1:-1]
-            return Formula.parse_prefix(contradiction_str)[0]
-        contradiction_str = contradiction_str[:-1] + ')'*count
-        return Formula.parse_prefix(contradiction_str)[0]
-
-    # one value case
-    if count == 0:
-        dnf_string = dnf_string[1:-1]
-        return Formula.parse_prefix(dnf_string)[0]
-
-    # standard case
-    dnf_string = dnf_string[:-len(most_recent_formula)-2] + \
-                 most_recent_formula + count*')'
-    return Formula.parse_prefix(dnf_string)[0]

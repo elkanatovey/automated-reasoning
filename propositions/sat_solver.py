@@ -131,11 +131,36 @@ class Sat_Solver:
 
         return decision_variable, None
 
+
+    def t_update(self, decision_variable, assignment):
+        """pretend to decide new var that is updated based on theory solver,
+        -return (decision_variable), if not been set yet
+        -return (False) if contradicts old setting
+        -return (True) if already been set as such
+        """
+
+        # not set yet case
+        if self.assignment_dict[decision_variable] is None:
+            self.level += 1
+            self.li_unit_clauses[self.level] = []
+        # update relevant dbs
+            self.assignment_dict[decision_variable] = assignment
+            self.update_graph(decision_variable)
+            self.decision_level_history[self.level] = DecisionLevel(decision_variable)
+            return decision_variable
+
+        # set true case
+        elif self.assignment_dict[decision_variable] == assignment:
+            return True
+        # contradicting previous assignment case
+        else:
+            return False
+
     def propagate(self, unit_variable: str):
         """:returns
-        - True, None if propagated successfully,
-        - conflict clause, backjump level if ran into conflict
-
+        - (True, None) if propagated successfully,
+        - (conflict clause, backjump level) if ran into conflict
+        - (UNSAT_MSG, None) if conflict at level 0
         """
         # restarted l0
         if self.level == 0:
@@ -297,10 +322,14 @@ class Sat_Solver:
         else:
             return clause, 0
 
-
+    def create_clause_jump_level(self, c)->[Clause, int]:
+        """generate clause in correct format for theory conflict"""
+        c = Clause(c)
+        c, jump_level = self.second_highest_node_level(c)
+        return c, jump_level
 
     def __largest_available_vsids_member(self):
-        """return best key if remains, else return true"""
+        """return best key if remains, else return true, break ties by lexicographically smaller key"""
         max = -1
         best_key = True
         for key in self.VSIDS_dict:
@@ -308,4 +337,7 @@ class Sat_Solver:
                 if max < self.VSIDS_dict[key]:
                     best_key = key
                     max = self.VSIDS_dict[key]
+                elif max == self.VSIDS_dict[key]:  # key must be an str here
+                    if key < best_key:
+                        best_key = key
         return best_key
