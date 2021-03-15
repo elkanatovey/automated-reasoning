@@ -34,6 +34,13 @@ def is_constant(s: str) -> bool:
     Returns:
         ``True`` if the given string is a constant name, ``False`` otherwise.
     """
+    if(s[0] >= '0' and s[0] <= '9'):
+        try:
+            f = float(s)
+            return True
+        except:
+            return False
+
     return (((s[0] >= '0' and s[0] <= '9') or (s[0] >= 'a' and s[0] <= 'd'))
             and s.isalnum()) or s == '_'
 

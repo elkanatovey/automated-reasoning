@@ -439,6 +439,23 @@ class Formula:
                 return left and right
         return True
 
+    def verify_or_not_child_of_and(self, parent: str) -> bool:
+        """verify that or is not child of and in formula's tree. Assumes that unary
+        ops are pushed down the parse tree
+        """
+        if hasattr(self, 'second'):
+            if parent == '&':
+                if self.root == '|':
+                    return False
+                left = self.first.verify_or_not_child_of_and('&')
+                right = self.second.verify_or_not_child_of_and('&')
+                return left and right
+            else:
+                left = self.first.verify_or_not_child_of_and(self.first.root)
+                right = self.second.verify_or_not_child_of_and(self.second.root)
+                return left and right
+        return True
+
     def get_clauses(self) -> List[Tuple[List[str], List[str]]]:
         """For each CNF clause in formula return two lists: pos, neg where they respectively are the literals
         and negated literals within the clause. """

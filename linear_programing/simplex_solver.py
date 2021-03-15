@@ -2,6 +2,8 @@ import numpy as np
 import copy
 import operator as op
 from functools import reduce
+from predicates.syntax import *
+from linear_programing.simplex_parser import LP_formula
 
 UNBOUNDED = "UNBOUNDED"
 TERMINATION = "TERMINATION"
@@ -9,9 +11,23 @@ TERMINATION = "TERMINATION"
 EPSILON = 0.00000000001
 MAXIMUM_NUM_OF_ETA_MAT = 10
 
-class LP_Solver:
 
-    def __init__(self):
+class LP_Solver:
+    """
+    syntax:
+        0. TQ  ---------  only '>=' ('GS')  and '=' ('S') relations
+        1. multiplication looks like this mult(const, X) - const at the first argument (term. not a formula)
+        2. minus always has 2 arguments. in case of -x we will use minus(0,x)
+        3. don't use variable 'y' (saved name)
+    """
+    def __init__(self, formula: str):
+
+        formula = Formula.parse(formula)
+        assert formula is not None
+
+        LP_formula(formula)
+
+
 
         # better to hold vars as integers (in Bland's rule we need to choose smallest)
         # self.X_B = np.array([4, 5, 6], dtype=np.float64)
@@ -25,7 +41,6 @@ class LP_Solver:
         self.An = np.array([[1, 1, -1], [1, 2, 2], [1, 1, -4]], dtype=np.float64)
         self.C_N = np.array([-1, 0, 0], dtype=np.float64)
         self.Xb_star = np.array([-1, -6, 2], dtype=np.float64)
-
 
         # self.X_B = np.array([5, 6, 7], dtype=np.float64)
         # self.X_N = np.array([1, 2, 3, 4], dtype=np.float64)
@@ -47,6 +62,8 @@ class LP_Solver:
         self.bland_on = True
         self.auxilary_problem = True
 
+
+
     def ncr(self, n, r):
         r = min(r, n - r)
         numer = reduce(op.mul, range(n, n - r, -1), 1)
@@ -64,8 +81,8 @@ class LP_Solver:
 
             # termination - got to optimal solution
             if all(x <= 0 for x in self.C_N) and all(y <= 0 for y in self.C_B):
-                if(self.auxilary_problem == False):
-                    self.terminate(TERMINATION)     # in auxiliary problem the subject function is -X0
+                if (self.auxilary_problem == False):
+                    self.terminate(TERMINATION)  # in auxiliary problem the subject function is -X0
                     break
 
             leaving_ind, entering_ind = 0, 0
@@ -97,13 +114,11 @@ class LP_Solver:
             self.swap_and_update(entering_ind, leaving_ind)
             self.iters += 1
 
-
-
     def BTRAN(self, entering_index_num_of_tries, entering_indexes_already_tried):
         y = self.compute_y(self.C_B)
         product = np.dot(y, self.An)
 
-        if(self.auxilary_problem == True and self.iters == 0):
+        if (self.auxilary_problem == True and self.iters == 0):
             entering_index = np.argmin(self.Xb_star)
 
         elif (self.bland_on == False):
@@ -167,7 +182,7 @@ class LP_Solver:
         # updating Eta matrices list
         self.eta_matrices.append((leaving_ind, copy.deepcopy(self.d)))
 
-        if(len(self.eta_matrices) > MAXIMUM_NUM_OF_ETA_MAT):
+        if (len(self.eta_matrices) > MAXIMUM_NUM_OF_ETA_MAT):
             self.lu_factorization()
 
     def terminate(self, terminate_reason):
@@ -249,14 +264,12 @@ class LP_Solver:
         """
         identity = np.identity(len(mat))
         for i in range(len(mat)):
-            if(np.all(identity[:, i] == mat[:, i])):
+            if (np.all(identity[:, i] == mat[:, i])):
                 continue
             else:
                 return [i, mat[:, i]]
 
-        return [0, identity[:, 0]]      # case of identity mat
-
-
+        return [0, identity[:, 0]]  # case of identity mat
 
     # def is_triangular(self, matrix):
     #     for i in range(1, len(matrix[0])):
@@ -276,8 +289,8 @@ class LP_Solver:
     #     print("mat  " , mat)
     #     print("B  ", self.B)
 
-
 # a = np.array([1, 2, 3])
 # print(sorted(a))
-s = LP_Solver()
-s.revised_simplex()
+# s = LP_Solver()
+# s.revised_simplex()
+

@@ -7,7 +7,8 @@ smt_formulas = ['(f(x)=g(y)&g(y)=f(x))','plus(plus(x,plus(y,z)),w)=y', 'f(x)=g(y
 
 smt_formulas_false = ['(~f(x)=f(y)&(y=x|~x=x))']
 
-smt_formulas_true = ['(~f(x)=f(y)&(y=x|y1=plus(plus(x,plus(y,z)),w)))','((((a=b&(~a=b|(~u=v|b=c)))&(u=v|(~v=w|f(u)=f(v))))&(~b=c|(~v=w|f(u)=f(a))))&(~f(u)=f(a)|~f(a)=f(c)))']
+smt_formulas_true = ['(~f(x)=f(y)&(y=x|y1=plus(plus(x,plus(y,z)),w)))','((((a=b&(~a=b|(~u=v|b=c)))&(u=v|(~v=w|f(u)=f(v))))&(~b=c|(~v=w|f(u)=f(a))))'
+                                                                       '&(~f(u)=f(a)|~f(a)=f(c)))']
 
 # 'a=b'
 # '(~a=b|(~s=t|b=c))'

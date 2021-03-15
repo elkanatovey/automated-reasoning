@@ -196,6 +196,56 @@ def NNF_to_CNF(formula: Formula) -> Formula:
     else:
         assert False
 
+def NNF_to_DNF(formula: Formula) -> Formula:
+    '''
+
+    :param formula: an NNF formula
+    :return:
+    '''
+    # base/unary case
+    if is_variable(formula.root) or is_constant(formula.root) or is_unary(formula.root):
+        return formula
+
+    if formula.root == '&':
+        child_l = NNF_to_DNF(formula.first)
+        child_r = NNF_to_DNF(formula.second)
+        if child_l.root == '|' and child_r.root == '|':
+            a = NNF_to_DNF(child_l.first)
+            b = NNF_to_DNF(child_l.second)
+            c = NNF_to_DNF(child_r.first)
+            d = NNF_to_DNF(child_r.second)
+            ac = NNF_to_DNF(Formula('&', a, c))
+            ad = NNF_to_DNF(Formula('&', a, d))
+            bc = NNF_to_DNF(Formula('&', b, c))
+            bd = NNF_to_DNF(Formula('&', b, d))
+
+            left = Formula('|', ac, ad)
+            right = Formula('|', bc,bd)
+            return Formula('|', left, right)
+        elif child_l.root == '|':
+            a = NNF_to_DNF(child_l.first)
+            b = NNF_to_DNF(child_l.second)
+            c = child_r
+            left = NNF_to_DNF(Formula('&', a, c))
+            right = NNF_to_DNF(Formula('&', b, c))
+
+
+            return Formula('|', left, right)
+        elif child_r.root == '|':
+            a = NNF_to_DNF(child_r.first)
+            b = NNF_to_DNF(child_r.second)
+            c = child_l
+            left = NNF_to_DNF(Formula('&', a, c))
+            right = NNF_to_DNF(Formula('&', b, c))
+
+            return Formula('|', left, right)
+        else:
+            return Formula('&', child_l, child_r)
+
+    elif formula.root == '|':
+        return Formula('|', NNF_to_DNF(formula.first), NNF_to_DNF(formula.second))
+    else:
+        assert False
 
 def to_tseitin_step1(formula: Formula) -> list:
     """ return a list of all subformulas reformulated as iff tseitin reps

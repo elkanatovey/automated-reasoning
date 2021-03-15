@@ -1,11 +1,17 @@
 from propositions.tseitin import to_NNF, to_NNF_eliminate_IFF_and_IF, to_NNF_push_negations, preprocess_clauses, \
-    NNF_to_CNF, to_tseitin_step1, to_tseitin_step2, to_tseitin
+    NNF_to_CNF, to_tseitin_step1, to_tseitin_step2, to_tseitin, NNF_to_DNF
 from propositions.semantics import is_tautology, is_satisfiable
 from propositions.syntax import Formula
+from linear_programing.simplex_parser import *
 
-nnf_fs = ['F', 'T', 'r', '~x', '(x&y)', '(x<->y)', '(x&y)','(x|y)', '(x|y)',
+nnf_fs = ['F', 'T', 'r', '~x', '(x&y)', '(x<->y)', '(x&y)', '(x|y)', '(x|y)',
            '(x->y)', '(x&y)', '(x&x)', '(p&q)', '(x|(y&z))', '~(~x|~(y|z))','((p1|~p2)|~(p3|~~p4))',
             '((x&y)<->(~x&~y))', '((x|~y)&(~F->(z<->T)))', '~~~~F', '(~~x&~(x&y))', '((~p|~q)&x)']
+
+dnf_fs = ['F', 'T', 'r', '~x', '(x&y)', '(x<->y)', '(x&y)', '(x|y)', '(x|y)',
+           '(x->y)', '(x&y)', '(x&x)', '(p&q)', '(x|(y&z))', '(x|(y|z))','((p1|(((p2&p5)&(p3|p4))|p6))|(p3|p4))',
+            '((x&y)<->(x&y))', '((x|y)&(F->(z<->T)))', '~~~~F', '(x&(x&y))', '((p|q)&x)']
+
 tseitin_fs = ['(x&~x)', '~x', '(x&y)', '(x<->y)', '(x&y)','(x|y)', '(x|y)',
            '(x->y)', '(x&y)', '(x&x)', '(p&q)', '(x|(y&z))', '~(~x|~(y|z))','((p1|~p2)|~(p3|~~p4))',
             '((x&y)<->(~x&~y))', '((x|~y)&(~F->(z<->T)))', '~~~~F', '(~~x&~(x&y))', '((~p|~q)&x)']
@@ -107,6 +113,19 @@ def test_to_NNF_to_CNF(debug = False):
         if debug:
             print(f, "    ", fff)
         assert fff.verify_and_not_child_of_or(fff.root)
+        assert is_tautology(Formula('<->', ff, fff))
+
+def test_to_NNF_to_DNF(debug = True):
+    if debug:
+        print()
+        print('Testing that  or is not child of and in converted formula')
+    for f in dnf_fs:
+        f = Formula.parse(f)
+        ff = to_NNF(f)
+        fff = NNF_to_DNF(ff)
+        if debug:
+            print(f, "    ", fff)
+        assert fff.verify_or_not_child_of_and(fff.root)
         assert is_tautology(Formula('<->', ff, fff))
 
 
