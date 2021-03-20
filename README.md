@@ -56,7 +56,7 @@ Examples: ‘x’, ‘y12’, ‘zLast’.<br/>
 **plus** - Addition of 2 terms <br/>
 **minus** - Deduction of the second argument from the first one. <br/>
 Example: the formula  `x - 6` is **minus(x, 6)** and the formula `-x + 6` will be written as **plus(minus(0, x), 6)**<br/>
-‘plus(x, z)’, ‘plus(mult(8, x), minus(0, z))’ .<br/>
+some more examples - ‘plus(x, z)’, ‘plus(mult(8, x), minus(0, z))’ .<br/>
 
 The following strings are valid **formulas** for the LP solver: <br/>
 • An equality of the form ‘t1 = t2’, where each of t1 and t2 is a valid terms, will be written as 'S(t1, t2)'.<br/>
