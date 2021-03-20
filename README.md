@@ -50,18 +50,18 @@ A  **Predicate Formula** in `T_q` (Theory of Rationals) that is made up of combi
 • A **variable name**: a sequence of alphanumeric characters that begins with a letter
 in ‘u’. . . ‘z’. **DO NOT USE SAVED NAMES** `x0` **OR** `y`<br/>
 Examples: ‘x’, ‘y12’, ‘zLast’.<br/>
-• A binary **function** of the form ‘f(a,b)’, where f is one of the following - 
+• A binary **function** of the form ‘f(a, b)’, where f is one of the following - 
  **plus, minus, mult**.<br/>
 **mult** - Multiplication of a term by a constant, the constant is always the first argument. <br/> 
-**minus** - Deduction of the second argument from the first one. <br/>
-Example: the formula  `x - 6` is **minus(x,6)** and the formula `-x + 6` will be written as **plus(minus(0,x),6)**<br/>
 **plus** - Addition of 2 terms
-Examples: ‘plus(x,z)’, ‘plus(mult(8,x),minus(0,z))’ .<br/>
+**minus** - Deduction of the second argument from the first one. <br/>
+Example: the formula  `x - 6` is **minus(x, 6)** and the formula `-x + 6` will be written as **plus(minus(0, x), 6)**<br/>
+‘plus(x, z)’, ‘plus(mult(8, x), minus(0, z))’ .<br/>
 
 The following strings are valid **formulas** for the LP solver: <br/>
-• An equality of the form ‘t1=t2’, where each of t1 and t2 is a valid terms, will be written as 'S(t1, t2)'.<br/>
+• An equality of the form ‘t1 = t2’, where each of t1 and t2 is a valid terms, will be written as 'S(t1, t2)'.<br/>
 Examples: 'S(x, z)' means `x = z`, ‘S(plus(x1, z), minus(x2, 5))’ means `x1 + z = x2 - 5`.<br/>
 • Same for the relation '>=' - will be written as 'GS(t1, t2)' .<br/>
 • A unary negation of the form ‘~φ’, where φ is a valid formula.<br/>
-• A binary operation of the form ‘(φ*ψ)’, where * is one of the binary operators
+• A binary operation of the form ‘(φ * ψ)’, where * is one of the binary operators
 ‘|’, ‘&’, or ‘→’,2 and each of φ and ψ is a valid formula.<br/>
