@@ -53,7 +53,7 @@ Examples: ‘x’, ‘y12’, ‘zLast’.<br/>
 • A binary **function** of the form ‘f(a, b)’, where f is one of the following - 
  **plus, minus, mult**.<br/>
 **mult** - Multiplication of a term by a constant, the constant is always the first argument. <br/> 
-**plus** - Addition of 2 terms
+**plus** - Addition of 2 terms <br/>
 **minus** - Deduction of the second argument from the first one. <br/>
 Example: the formula  `x - 6` is **minus(x, 6)** and the formula `-x + 6` will be written as **plus(minus(0, x), 6)**<br/>
 ‘plus(x, z)’, ‘plus(mult(8, x), minus(0, z))’ .<br/>
