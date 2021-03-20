@@ -228,9 +228,8 @@ def NNF_to_DNF(formula: Formula) -> Formula:
             c = child_r
             left = NNF_to_DNF(Formula('&', a, c))
             right = NNF_to_DNF(Formula('&', b, c))
-
-
             return Formula('|', left, right)
+
         elif child_r.root == '|':
             a = NNF_to_DNF(child_r.first)
             b = NNF_to_DNF(child_r.second)

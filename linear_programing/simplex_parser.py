@@ -24,6 +24,21 @@ class LP_formula:
         self.propositional_formula = NNF_to_DNF(self.propositional_formula)
 
         self.clauses = break_to_clauses(self.propositional_formula)
+        self.clauses_count = len(self.clauses)  # counter for number of clauses
+
+    def get_z2f(self):
+        return self.z2f
+
+    def clauses_left(self):
+        return self.clauses_count
+
+    def get_clause(self):
+        """
+        return a clause and deduce clauses_left by 1
+        :return:
+        """
+        self.clauses_count -= 1
+        return self.clauses[self.clauses_count]
 
     def push_negations(self, formula: propositionalFormula) -> propositionalFormula:
         """
@@ -64,89 +79,6 @@ class LP_formula:
             return formula
 
 
-    def parse_string(self, s: str):
-        """
-        return a float represented by the string s if s is a number.
-        else,
-        return the string itself
-        :param s:
-        :return:
-        """
-        try:
-            x = float(s)
-        except:
-            # not a number
-            return s
-        return x
-
-
-    def get_all_const(self,term: Term) -> list:
-        """
-        return a list with all the consts (positive and negative numbers) that appears in the term
-
-        for example  ->    -(1-2x) + 5   will return [-1,5]
-
-        :param term:
-        :return:
-        """
-        ls = []
-        if type(self.parse_string(term.root)) is float and self.parse_string(term.root) != 0:  # case term is number
-            return [self.parse_string(term.root)]
-
-        elif term.root == 'plus':
-            ls.extend(self.get_all_const(term.arguments[0]))  # first arg
-            ls.extend(self.get_all_const(term.arguments[1]))  # second arg
-
-        elif term.root == 'minus':
-            ls = self.get_all_const(term.arguments[1])  # second arg
-            for i in range(len(ls)):
-                ls[i] = ls[i] * -1
-
-            ls.extend(self.get_all_const(term.arguments[0]))  # first arg
-
-        return ls
-
-
-    def get_all_vars(self, term: Term) -> {str: float}:
-        """
-        return a dictionary of the vars as keys, and their number of appearances as values
-
-        for example  ->    -(1-2x) + 5y -x   will return {'y' : 5, 'x': 1}
-
-        :param term:
-        :return:
-        """
-        dic = {}
-
-        if is_variable(term.root):  # case term is number
-            return {self.parse_string(term.root): 1}
-
-        if term.root == 'mult':
-            const = self.parse_string(term.arguments[0].root)
-            assert type(const) == float
-
-            new_dic = self.get_all_vars(term.arguments[1])
-            for key in new_dic:
-                new_dic[key] *= const
-            dic = {k: dic.get(k, 0) + new_dic.get(k, 0) for k in set(dic) | set(new_dic)}
-
-        elif term.root == 'plus':
-            new_dic = self.get_all_vars(term.arguments[0])
-            dic = {k: dic.get(k, 0) + new_dic.get(k, 0) for k in set(dic) | set(new_dic)}
-            new_dic = self.get_all_vars(term.arguments[1])
-            dic = {k: dic.get(k, 0) + new_dic.get(k, 0) for k in set(dic) | set(new_dic)}
-
-        elif term.root == 'minus':
-            new_dic = self.get_all_vars(term.arguments[1])
-            for key in new_dic:
-                new_dic[key] *= -1
-            dic = {k: dic.get(k, 0) + new_dic.get(k, 0) for k in set(dic) | set(new_dic)}
-
-            new_dic = self.get_all_vars(term.arguments[0])
-            dic = {k: dic.get(k, 0) + new_dic.get(k, 0) for k in set(dic) | set(new_dic)}
-
-        return dic
-
 
     def process_smt_formula(self, formula: smtFormula):
         """
@@ -165,8 +97,8 @@ class LP_formula:
         term1 = formula.arguments[0]
         term2 = formula.arguments[1]  # always should exists
 
-        left_consts = self.get_all_const(term1)
-        right_consts = self.get_all_const(term2)
+        left_consts = get_all_const(term1)
+        right_consts = get_all_const(term2)
 
         c = 0  # compute constant C on the right side of formula
         for x in left_consts:
@@ -174,8 +106,8 @@ class LP_formula:
         for x in right_consts:
             c += x
 
-        left_vars = self.get_all_vars(term1)
-        right_vars = self.get_all_vars(term2)
+        left_vars = get_all_vars(term1)
+        right_vars = get_all_vars(term2)
 
         # left side of the formula
         # computing dict of vector a of constants multiplied by vector x of vars - dict type {str:float}
@@ -211,7 +143,6 @@ class LP_formula:
             formula2 = self.create_formula(c, aTx, 'KS')
             new_formula = smtFormula('|', formula1, formula2)
 
-        print('y')
         return new_formula
 
     def create_formula(self, c, aTx, relation):
@@ -278,3 +209,86 @@ def parse_clause(clause: propositionalFormula) -> list:
         return [clause.root]
     else:
         return parse_clause(clause.first) + parse_clause(clause.second)
+
+def parse_string(s: str):
+    """
+    return a float represented by the string s if s is a number.
+    else,
+    return the string itself
+    :param s:
+    :return:
+    """
+    try:
+        x = float(s)
+    except:
+        # not a number
+        return s
+    return x
+
+
+def get_all_const(term: Term) -> list:
+    """
+    return a list with all the consts (positive and negative numbers) that appears in the term
+
+    for example  ->    -(1-2x) + 5   will return [-1,5]
+
+    :param term:
+    :return:
+    """
+    ls = []
+    if type(parse_string(term.root)) is float and parse_string(term.root) != 0:  # case term is number
+        return [parse_string(term.root)]
+
+    elif term.root == 'plus':
+        ls.extend(get_all_const(term.arguments[0]))  # first arg
+        ls.extend(get_all_const(term.arguments[1]))  # second arg
+
+    elif term.root == 'minus':
+        ls = get_all_const(term.arguments[1])  # second arg
+        for i in range(len(ls)):
+            ls[i] = ls[i] * -1
+
+        ls.extend(get_all_const(term.arguments[0]))  # first arg
+
+    return ls
+
+
+def get_all_vars(term) -> {str: float}:
+    """
+    return a dictionary of the vars as keys, and their number of appearances as values
+
+    for example  ->    -(1-2x) + 5y -x   will return {'y' : 5, 'x': 1}
+
+    :param term: Term or smtFormula
+    :return:
+    """
+    dic = {}
+
+    if is_variable(term.root):  # case term is number
+        return {parse_string(term.root): 1}
+
+    if term.root == 'multi':
+        const = parse_string(term.arguments[0].root)
+        assert type(const) == float
+
+        new_dic = get_all_vars(term.arguments[1])
+        for key in new_dic:
+            new_dic[key] *= const
+        dic = {k: dic.get(k, 0) + new_dic.get(k, 0) for k in set(dic) | set(new_dic)}
+
+    elif term.root == 'plus':
+        new_dic = get_all_vars(term.arguments[0])
+        dic = {k: dic.get(k, 0) + new_dic.get(k, 0) for k in set(dic) | set(new_dic)}
+        new_dic = get_all_vars(term.arguments[1])
+        dic = {k: dic.get(k, 0) + new_dic.get(k, 0) for k in set(dic) | set(new_dic)}
+
+    elif term.root == 'minus':
+        new_dic = get_all_vars(term.arguments[1])
+        for key in new_dic:
+            new_dic[key] *= -1
+        dic = {k: dic.get(k, 0) + new_dic.get(k, 0) for k in set(dic) | set(new_dic)}
+
+        new_dic = get_all_vars(term.arguments[0])
+        dic = {k: dic.get(k, 0) + new_dic.get(k, 0) for k in set(dic) | set(new_dic)}
+
+    return dic

@@ -1,55 +1,25 @@
-import numpy as np
-from linear_programing.simplex_solver import *
 from predicates.syntax import *
+from linear_programing.simplex_solver import *
+
+#     2x + z >= 1                                        -                    SAT
+f0 =  'GS(plus(mult(2,x),z),1)'
+#     (2x + z >= 1) & (x = 1)                            -                    SAT
+f1 =  '(GS(plus(mult(2,x),z),1)&GS(z,1))'
+#     (2x + z >= 1) & (z < 1) & (x < 2)                  -                    UNSAT
+f2 =  '((GS(plus(mult(2,x),z),1)&~GS(z,1))&~GS(x,2))'
+#     (x + z <= 5) & (-x - z <= -5)        -                                  SAT
+f3 = '((~GS(plus(x,z),5)|S(plus(x,z),5))&(~GS(minus(minus(0,x),z),minus(0,5))|S(minus(minus(0,x),z),minus(0,5))))'
+#     (x + z <= 5) & (-x - z <= -6)        -                                  UNSAT
+f4 = '((~GS(plus(x,z),5)|S(plus(x,z),5))&(~GS(minus(minus(0,x),z),minus(0,6))|S(minus(minus(0,x),z),minus(0,6))))'
+#     (x + z <= 5) & (-x - z <= -5) & (x + z != 5)                            UNSAT
+f5 = '(((~GS(plus(x,z),5)|S(plus(x,z),5))&(~GS(minus(minus(0,x),z),minus(0,5))|S(minus(minus(0,x),z),minus(0,5))))&~S(plus(x,z),5))'
 
 
-TQ_formulas = ['G(plus(plus(x,plus(y,~5)),w),y)','(f(x)=g(y)&g(y)=f(x))', 'f(x)=g(y)']
 
-
-
-for f in TQ_formulas:
-    formula = Formula.parse(f)
-    assert formula is not None
-
-
-
-# def test_simplex_solver(debug=False):
-#     for f in TQ_formulas:
-#         formula = Formula.parse(f)
-#         assert formula is not None
-#
-#     print(6)
-#
-#
-#
-#
-# def test_simplex_solver(debug=False):
-#     # better to hold vars as integers (in Bland's rule we need to choose smallest)
-#
-#
-#
-#     X_B = np.array([4, 5, 6])
-#     X_N = np.array([1, 2, 3])
-#
-#     B = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-#     An = np.array([[1, 1, 2], [2, 0, 3], [2, 1, 3]])
-#
-#     C_B = np.array([0, 0, 0])
-#     C_N = np.array([3, 2, 4])
-#     Xb_star = np.array([4, 5, 7])
-#
-#     # X_B = np.array([5, 6, 7])
-#     # X_N = np.array([1, 2, 3, 4])
-#     #
-#     # B = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-#     # An = np.array([[3, 2, 1, 2], [1, 1, 1, 1], [4, 3, 3, 4]])
-#     #
-#     # C_B = np.array([0, 0, 0])
-#     # C_N = np.array([19, 13, 12, 17])
-#     # Xb_star = np.array([225, 117, 420])
-#
-#
-#     s = LP_Solver()
-#     s.revised_simplex()
-#
-#
+SMT_formulas = [f0, f1, f2, f3, f4, f5]
+for f in SMT_formulas:
+    # formula = Formula.parse(f)
+    solver = run_simplex(f)
+    # solver = LP_Solver([{'x': 1, 'y': 1}, {'x': -1, 'y': -1}, {'x': 2, 'y': 1, 'z': 1}], [5, 5, -10], False)
+    # solver = LP_Solver([{'x':1, 'y':0,'z':1},{'x':1, 'y':1,'z':0},{'x':2, 'y':1, 'z':1}],[5,5,-10], False)
+    # solver.get_all_const()
