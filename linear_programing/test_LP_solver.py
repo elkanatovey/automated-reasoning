@@ -17,9 +17,9 @@ f5 = '(((~GS(plus(x,z),5)|S(plus(x,z),5))&(~GS(minus(minus(0,x),z),minus(0,5))|S
 
 
 SMT_formulas = [f0, f1, f2, f3, f4, f5]
-for f in SMT_formulas:
-    # formula = Formula.parse(f)
-    solver = run_simplex(f)
-    # solver = LP_Solver([{'x': 1, 'y': 1}, {'x': -1, 'y': -1}, {'x': 2, 'y': 1, 'z': 1}], [5, 5, -10], False)
-    # solver = LP_Solver([{'x':1, 'y':0,'z':1},{'x':1, 'y':1,'z':0},{'x':2, 'y':1, 'z':1}],[5,5,-10], False)
-    # solver.get_all_const()
+def test_LP_solver(debug=False):
+    for f in SMT_formulas:
+        solver = run_simplex(f)
+        # solver = LP_Solver([{'x': 1, 'y': 1}, {'x': -1, 'y': -1}, {'x': 2, 'y': 1, 'z': 1}], [5, 5, -10], False)
+
+

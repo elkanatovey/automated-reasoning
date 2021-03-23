@@ -181,7 +181,6 @@ class LP_Solver:
             self.eta_matrices = self.auxiliary_problem.eta_matrices
 
 
-
         self.iterations_before_bland = self.ncr(len(self.X_N) + len(self.X_B), len(self.Xb_star))
         self.iters = 0
         self.t = -1
@@ -264,7 +263,7 @@ class LP_Solver:
 
             diff = self.C_N - product
 
-            if np.max(diff) <= 0:
+            if np.max(diff) <= EPSILON:
                 if self.is_auxilary_problem:
                     number = self.variables.index('x0') + 1
                     if np.max(diff) <= 0 and number in self.X_B and self.Xb_star[np.where(self.X_B == number)[0]] == 0:
@@ -339,16 +338,6 @@ class LP_Solver:
         self.An[:, entering_ind] = temp
 
 
-
-        #     assert self.Xb_star[leaving_ind] < 0
-        #     self.Xb_star = self.Xb_star - self.d * self.t
-        #     self.Xb_star[leaving_ind] = self.t
-        #     # temp = np.abs(self.Xb_star[leaving_ind])
-        #     # # it should be a negative number so basically we add to Xb_star
-        #     # self.Xb_star = self.Xb_star - self.Xb_star[leaving_ind]
-        #     # self.Xb_star[leaving_ind] = temp
-        # else:
-        # updating Xb_star
         self.Xb_star = self.Xb_star - self.d * self.t
         self.Xb_star[leaving_ind] = self.t
 
@@ -448,26 +437,3 @@ class LP_Solver:
                 return [i, mat[:, i]]
 
         return [0, identity[:, 0]]  # case of identity mat
-
-    # def is_triangular(self, matrix):
-    #     for i in range(1, len(matrix[0])):
-    #         for j in range(i):
-    #             if(matrix[i, j] != 0):
-    #                 return False
-    #     return True
-
-    # # sanity check to check if multiplication of the eta matrices equal B
-    # def compute_B(self):
-    #     mat = np.identity(len(self.X_B))
-    #     for i in range(1, len(self.eta_matrices)):
-    #         col_num, col = self.eta_matrices[i][0], self.eta_matrices[i][1]
-    #         eta = np.identity(len(self.X_B))
-    #         eta[:, col_num] = col
-    #         mat = np.dot(mat, eta)
-    #     print("mat  " , mat)
-    #     print("B  ", self.B)
-
-# a = np.array([1, 2, 3])
-# print(sorted(a))
-# s = LP_Solver()
-# s.revised_simplex()
