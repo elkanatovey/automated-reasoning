@@ -11,6 +11,7 @@ from propositions.sat_solver import Sat_Solver
 from propositions.sat_solver import UNSAT_MSG
 from propositions.sat_solver import SAT_MSG
 from propositions.sat_solver import BACKTRACK_MSG
+from linear_programing.simplex_solver import run_simplex
 
 BUG_MSG = "This shouldn't be here"
 
@@ -125,8 +126,8 @@ def run_smt_solver(formula: str):
                 return UNSAT_MSG, None
 
 
-def run_lp_theory_solver():
-    pass
+def run_lp_theory_solver(formula: str):
+    run_simplex(formula)
 
 
 if __name__ == "__main__":
@@ -148,6 +149,6 @@ if __name__ == "__main__":
         result = run_smt_solver(f)
         print(result)
     elif solver == '3':
-        pass
+        run_lp_theory_solver(f)
     else:
         print("nonexistent solver")
