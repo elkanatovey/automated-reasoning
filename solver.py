@@ -140,7 +140,7 @@ if __name__ == "__main__":
         if cnf == '1':
             result = run_sat_cnf(f)
             print(result)
-        elif solver == '2':
+        elif cnf == '2':
             result = run_sat_solver(f)
             print(result)
         else:
