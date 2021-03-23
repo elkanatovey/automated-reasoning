@@ -41,7 +41,7 @@ The following strings are valid **formulas** in our SMT solver:
 Examples: ‘0=0’, ‘s(0)=1’, ‘plus(x,y)=plus(y,x)’.<br/>
 • A unary negation of the form ‘~φ’, where φ is a valid formula.<br/>
 • A binary operation of the form ‘(φ*ψ)’, where * is one of the binary operators
-‘|’, ‘&’, or ‘→’,2 and each of φ and ψ is a valid formula.<br/>
+‘|’, or ‘&’ and each of φ and ψ is a valid formula. Additionally, every such formula must be in CNF.<br/>
 
 #Valid input for the LP solver:
 
