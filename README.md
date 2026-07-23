@@ -4,6 +4,60 @@ This project contains an implementation of a SAT solver, SMT solver for `T_UF`, 
 `solver.py` to use any of the solvers and follow the prompts.
 
 ***
+## Getting started
+
+### Requirements
+
+* Python 3.10 or newer
+* Third-party packages: `numpy`, `networkx`, `matplotlib`
+
+### Installation
+
+Clone the repository and install the dependencies. Using a virtual environment is recommended:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate        # on Windows: .venv\Scripts\activate
+```
+
+Then install with either of the following:
+
+```bash
+# Option A: install the project (and its dependencies) in editable mode
+pip install -e .
+
+# Option B: install just the runtime dependencies
+pip install -r requirements.txt
+```
+
+To also install the test/lint tooling (`pytest`, `flake8`):
+
+```bash
+pip install -e ".[dev]"
+```
+
+### Running the solvers
+
+Launch the interactive driver and follow the prompts:
+
+```bash
+python solver.py
+```
+
+You will be asked to pick a solver (`1` = SAT, `2` = SMT, `3` = LP theory) and to
+enter a formula. For the SAT solver you are additionally asked whether the
+formula is already in CNF. See the sections below for the accepted formula syntax.
+
+### Running the tests
+
+```bash
+pytest
+```
+
+The test suite runs headless (a non-interactive `matplotlib` backend is selected
+automatically), so no plot windows will pop up.
+
+***
 #Valid input for the SAT solver:
 
 A  **Propositional Formula** is recursively defined as the following:<br/>
