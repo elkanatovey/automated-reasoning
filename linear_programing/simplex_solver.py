@@ -223,7 +223,7 @@ class LP_Solver:
                 entering_ind, entering_indexes_already_tried, entering_candidates_indexes = \
                     self.BTRAN(entering_index_num_of_tries, entering_indexes_already_tried)
 
-                if entering_candidates_indexes == "FINAL":
+                if isinstance(entering_candidates_indexes, str) and entering_candidates_indexes == "FINAL":
                     leaving_ind = np.where(self.X_B == self.variables.index('x0') + 1)[0][0]
                     self.t = 0
                     self.swap_and_update(entering_ind, leaving_ind)

@@ -132,11 +132,11 @@ def run_lp_theory_solver(formula: str):
 
 if __name__ == "__main__":
 
-    solver = input("Enter 1 for SAT, 2 for SMT, 3 for LP theory")
-    f = input("Please enter formula")
+    solver = input("Enter 1 for SAT, 2 for SMT, 3 for LP theory: ")
+    f = input("Please enter formula: ")
 
     if solver == '1':
-        cnf = input("Enter 1 for CNF, 2 for nonCNF")
+        cnf = input("Enter 1 for CNF, 2 for nonCNF: ")
         if cnf == '1':
             result = run_sat_cnf(f)
             print(result)

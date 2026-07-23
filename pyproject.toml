@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "automated-reasoning"
+version = "1.0.0"
+description = "A SAT solver, an SMT solver for T_UF, and an LP theory solver."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "networkx>=3.0",
+    "matplotlib>=3.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "flake8>=6.0",
+]
+
+# The repository uses a flat layout with several top-level scripts alongside the
+# solver packages, so the contents are declared explicitly to avoid setuptools
+# auto-discovery ambiguity.
+[tool.setuptools]
+py-modules = ["solver", "solver_helper", "logic_utils"]
+
+[tool.setuptools.packages.find]
+include = ["propositions*", "predicates*", "linear_programing*"]
+
+[tool.pytest.ini_options]
+# importlib mode lets the two `syntax_test.py` modules coexist, and pythonpath
+# puts the repository root on sys.path so `import solver`, `import predicates`,
+# etc. resolve during test collection.
+addopts = "--import-mode=importlib"
+pythonpath = ["."]

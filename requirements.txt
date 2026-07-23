@@ -1,0 +1,5 @@
+# Runtime dependencies for the automated-reasoning solvers.
+# Install with:  pip install -r requirements.txt
+numpy>=1.24
+networkx>=3.0
+matplotlib>=3.6
